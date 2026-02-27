@@ -15,7 +15,7 @@ RUN apt-get update && \
 # Layer 2: Python venv + all packages + Claude Code CLI
 # --system-site-packages inherits PyTorch/torchvision/torchaudio from base image (~2GB saving)
 RUN python -m venv --system-site-packages $FASTAI_VENV && \
-    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --upgrade setuptools pip && \
     pip install --no-cache-dir \
         fastai fastcore fastdownload fastbook fastkaggle \
         transformers tokenizers accelerate \
@@ -27,12 +27,15 @@ RUN python -m venv --system-site-packages $FASTAI_VENV && \
         datasets sentencepiece \
         gradio \
         jupyterlab notebook ipykernel ipywidgets \
-        nbdev && \
+        nbdev \
+        torcheval && \
     python -m ipykernel install --name fastai --display-name "FastAI (venv)" && \
     npm install -g @anthropic-ai/claude-code
 
-# Layer 3: Clone course repo (placed late — repo updates won't invalidate package cache)
-RUN git clone https://github.com/goosmanlei/fastai-course-part2.git /root/fastai-course-part2
+# Layer 3: Clone course repos (placed late — repo updates won't invalidate package cache)
+RUN git clone https://github.com/goosmanlei/fastai-course-part2.git /root/fastai-course-part2 && \
+    git clone https://github.com/fastai/course22p2.git /root/course22p2 && \
+    $FASTAI_VENV/bin/pip install --no-cache-dir --no-build-isolation --no-deps -e /root/course22p2
 
 # Layer 4: All configuration (matplotlib, Jupyter, git, shell)
 RUN mkdir -p /root/.config/matplotlib /root/.jupyter && \
