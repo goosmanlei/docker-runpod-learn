@@ -66,7 +66,7 @@ RUN mkdir -p /root/.config/matplotlib /root/.jupyter && \
       echo "c.ServerApp.disable_check_xsrf = True"; \
       echo "c.ServerApp.root_dir = '/root/fastai-course-part2'"; \
     } > /root/.jupyter/jupyter_lab_config.py && \
-    python -m ipykernel install --name fastai --display-name "FastAI" && \
+    python -m ipykernel install --name llm-learn --display-name "LLM Learn" && \
     git config --global user.email "leiguoguo.ai@gmail.com" && \
     git config --global user.name "goosmanlei" && \
     git config --global alias.co checkout && \
