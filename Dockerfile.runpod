@@ -1,8 +1,6 @@
-FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
+FROM nvcr.io/nvidia/pytorch:25.02-py3
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV FASTAI_VENV=/opt/fastai-venv
-ENV PATH="$FASTAI_VENV/bin:$PATH"
 
 # UTF-8 locale (required by btop and many terminal tools)
 ENV LANG=en_US.UTF-8
@@ -13,42 +11,49 @@ ENV LC_ALL=en_US.UTF-8
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=all
 
-# Layer 1: All system deps + Node.js (single apt-get update)
+# Layer 1: System deps + Node.js
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         git openssh-client graphviz vim curl wget fonts-noto-cjk btop \
+        ffmpeg \
         locales && \
     locale-gen en_US.UTF-8 && \
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y --no-install-recommends nodejs && \
     rm -rf /var/lib/apt/lists/*
 
-# Layer 2: Python venv + all packages + Claude Code CLI
-# --system-site-packages inherits PyTorch/torchvision/torchaudio from base image (~2GB saving)
-RUN python -m venv --system-site-packages $FASTAI_VENV && \
-    pip install --no-cache-dir --upgrade setuptools pip && \
-    pip install --no-cache-dir \
-        fastai fastcore fastdownload fastbook fastkaggle \
-        transformers tokenizers accelerate \
-        diffusers bitsandbytes peft safetensors \
-        timm \
-        matplotlib numpy pandas scipy scikit-learn \
-        seaborn plotly graphviz dtreeviz \
-        sympy networkx \
-        datasets sentencepiece \
-        gradio \
-        jupyterlab notebook ipykernel ipywidgets \
-        nbdev \
-        torcheval && \
-    python -m ipykernel install --name fastai --display-name "FastAI (venv)" && \
+# Layer 2: fastai 阶段
+# (numpy/scipy/matplotlib/scikit-learn/jupyterlab/notebook 已在基础镜像中，无需重装)
+RUN pip install --no-cache-dir \
+    fastai fastcore fastdownload fastbook fastkaggle \
+    nbdev \
+    ipykernel ipywidgets \
+    torcheval timm \
+    seaborn plotly graphviz dtreeviz \
+    sympy networkx
+
+# Layer 3: HuggingFace LLM 阶段
+# (einops/safetensors/flash_attn 2.7.3 已在基础镜像中，无需重装)
+RUN pip install --no-cache-dir \
+    transformers \
+    datasets \
+    accelerate \
+    peft \
+    trl \
+    bitsandbytes \
+    sentencepiece \
+    diffusers
+
+# Layer 4: Gradio + Claude Code CLI
+RUN pip install --no-cache-dir gradio && \
     npm install -g @anthropic-ai/claude-code
 
-# Layer 3: Clone course repos (placed late — repo updates won't invalidate package cache)
+# Layer 5: Clone course repos (placed late — repo updates won't invalidate package cache)
 RUN git clone https://github.com/goosmanlei/fastai-course-part2.git /root/fastai-course-part2 && \
     git clone https://github.com/fastai/course22p2.git /root/course22p2 && \
-    $FASTAI_VENV/bin/pip install --no-cache-dir --no-build-isolation --no-deps -e /root/course22p2
+    pip install --no-cache-dir --no-build-isolation --no-deps -e /root/course22p2
 
-# Layer 4: All configuration (matplotlib, Jupyter, git, shell)
+# Layer 6: Configuration (matplotlib, Jupyter, git, shell, ipykernel)
 RUN mkdir -p /root/.config/matplotlib /root/.jupyter && \
     printf "font.family : Noto Sans CJK SC\naxes.unicode_minus : False\n" \
         > /root/.config/matplotlib/matplotlibrc && \
@@ -61,14 +66,14 @@ RUN mkdir -p /root/.config/matplotlib /root/.jupyter && \
       echo "c.ServerApp.disable_check_xsrf = True"; \
       echo "c.ServerApp.root_dir = '/root/fastai-course-part2'"; \
     } > /root/.jupyter/jupyter_lab_config.py && \
+    python -m ipykernel install --name fastai --display-name "FastAI" && \
     git config --global user.email "leiguoguo.ai@gmail.com" && \
     git config --global user.name "goosmanlei" && \
     git config --global alias.co checkout && \
     git config --global alias.br branch && \
     git config --global alias.ci commit && \
     git config --global alias.st status && \
-    chsh -s /bin/bash root && \
-    echo 'source /opt/fastai-venv/bin/activate' >> /root/.bashrc
+    chsh -s /bin/bash root
 
 EXPOSE 8888
 
