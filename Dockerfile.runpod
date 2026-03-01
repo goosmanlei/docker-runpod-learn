@@ -22,6 +22,13 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends nodejs && \
     rm -rf /var/lib/apt/lists/*
 
+# Create venv (--system-site-packages 继承基础镜像中的 PyTorch / CUDA 包)
+RUN python -m venv /root/venvs/llm --system-site-packages
+
+# 激活 venv：后续所有 pip / python 命令均使用 venv
+ENV VIRTUAL_ENV=/root/venvs/llm
+ENV PATH=/root/venvs/llm/bin:$PATH
+
 # Layer 2: fastai 阶段
 # (numpy/scipy/matplotlib/scikit-learn/jupyterlab/notebook 已在基础镜像中，无需重装)
 RUN pip install --no-cache-dir \
