@@ -28,8 +28,10 @@ RUN python -m venv /root/venvs/llm --system-site-packages
 ENV VIRTUAL_ENV=/root/venvs/llm
 
 # Layer 2: fastai 阶段
-# (numpy/scipy/matplotlib/scikit-learn/jupyterlab/notebook 已在基础镜像中，无需重装)
-RUN /root/venvs/llm/bin/pip install --no-cache-dir \
+# (numpy/scipy/matplotlib/scikit-learn 已在基础镜像中，无需重装)
+# jupyterlab 必须装入 venv，否则 venv/bin/jupyter 不存在
+RUN $VIRTUAL_ENV/bin/pip install --no-cache-dir \
+    jupyterlab \
     fastai fastcore fastdownload fastbook fastkaggle \
     nbdev \
     ipykernel ipywidgets \
@@ -39,7 +41,7 @@ RUN /root/venvs/llm/bin/pip install --no-cache-dir \
 
 # Layer 3: HuggingFace LLM 阶段
 # (einops/safetensors/flash_attn 2.7.3 已在基础镜像中，无需重装)
-RUN /root/venvs/llm/bin/pip install --no-cache-dir \
+RUN $VIRTUAL_ENV/bin/pip install --no-cache-dir \
     transformers \
     datasets \
     accelerate \
@@ -50,20 +52,20 @@ RUN /root/venvs/llm/bin/pip install --no-cache-dir \
     diffusers
 
 # Layer 4: Gradio + Claude Code CLI
-RUN /root/venvs/llm/bin/pip install --no-cache-dir gradio && \
+RUN $VIRTUAL_ENV/bin/pip install --no-cache-dir gradio && \
     npm install -g @anthropic-ai/claude-code
 
 # Layer 5: Clone course repos (placed late — repo updates won't invalidate package cache)
 RUN git clone https://github.com/goosmanlei/fastai-course-part2.git /root/fastai-course-part2 && \
     git clone https://github.com/fastai/course22p2.git /root/course22p2 && \
-    /root/venvs/llm/bin/pip install --no-cache-dir --no-build-isolation --no-deps -e /root/course22p2
+    $VIRTUAL_ENV/bin/pip install --no-cache-dir --no-build-isolation --no-deps -e /root/course22p2
 
 # Layer 6: Configuration (matplotlib, Jupyter, git, shell, ipykernel)
 RUN mkdir -p /root/.config/matplotlib /root/.jupyter \
         /root/.jupyter/lab/user-settings/@jupyterlab/apputils-extension && \
     printf "font.family : Noto Sans CJK SC\naxes.unicode_minus : False\n" \
         > /root/.config/matplotlib/matplotlibrc && \
-    /root/venvs/llm/bin/python -c "import matplotlib.font_manager as fm; fm._load_fontmanager(try_read_cache=False)" && \
+    $VIRTUAL_ENV/bin/python -c "import matplotlib.font_manager as fm; fm._load_fontmanager(try_read_cache=False)" && \
     { echo "c.ServerApp.ip = '0.0.0.0'"; \
       echo "c.ServerApp.port = 8888"; \
       echo "c.ServerApp.allow_root = True"; \
@@ -75,14 +77,14 @@ RUN mkdir -p /root/.config/matplotlib /root/.jupyter \
     } > /root/.jupyter/jupyter_lab_config.py && \
     printf '{\n  "shortcuts": [\n    {\n      "command": "apputils:activate-command-palette",\n      "keys": ["Accel Shift C"],\n      "selector": "body",\n      "disabled": true\n    },\n    {\n      "command": "apputils:activate-command-palette",\n      "keys": ["Accel Alt C"],\n      "selector": "body"\n    }\n  ]\n}\n' \
         > /root/.jupyter/lab/user-settings/@jupyterlab/apputils-extension/shortcuts.jupyterlab-settings && \
-    /root/venvs/llm/bin/python -m ipykernel install --sys-prefix --name llm-learn --display-name "LLM Learn" && \
+    $VIRTUAL_ENV/bin/python -m ipykernel install --sys-prefix --name llm-learn --display-name "LLM Learn" && \
     git config --global user.email "leiguoguo.ai@gmail.com" && \
     git config --global user.name "goosmanlei" && \
     git config --global alias.co checkout && \
     git config --global alias.br branch && \
     git config --global alias.ci commit && \
     git config --global alias.st status && \
-    echo 'source /root/venvs/llm/bin/activate' >> /root/.bashrc && \
+    echo "source $VIRTUAL_ENV/bin/activate" >> /root/.bashrc && \
     echo '[ -f ~/.bashrc ] && source ~/.bashrc' >> /root/.bash_profile && \
     chsh -s /bin/bash root
 
