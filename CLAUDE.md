@@ -4,33 +4,49 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Purpose
 
-This repo contains Dockerfiles for running the [fast.ai course part 2](https://github.com/goosmanlei/fastai-course-part2):
+This repo contains a Dockerfile for running the [fast.ai course part 2](https://github.com/goosmanlei/fastai-course-part2) on RunPod GPU instances:
 
-- `Dockerfile.runpod` — GPU container for RunPod (clones course repo into image)
-- `Dockerfile.macpod` — Local container for macOS Apple Silicon (mounts local directory)
+- `Dockerfile.runpod` — GPU container for RunPod (linux/amd64 only)
+- `macpod.sh` — Helper script to manage a local macOS container (references a separately built `macpod-for-fastai-course` image)
 
 ## Build
 
 ```bash
-# RunPod image (linux/amd64)
+# RunPod image (linux/amd64 only — nvcr.io base has no arm64 variant)
 docker build --platform linux/amd64 -f Dockerfile.runpod -t goosmanlei/runpod-for-fastai-course .
-
-# macOS Apple Silicon image (linux/arm64)
-docker build --platform linux/arm64 -f Dockerfile.macpod -t goosmanlei/macpod-for-fastai-course .
 ```
 
 ## Run (macpod)
 
 ```bash
-./macpod.sh
-# JupyterLab at http://localhost:8001, working dir mapped from ~/llmpath
+./macpod.sh          # start / stop / restart / status / logs / rm / shell
+# JupyterLab at http://localhost:8001, ~/llmpath mapped to /workspace
 ```
 
 ## Architecture
 
-Both images are based on `pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel` and set up:
+`Dockerfile.runpod` is based on `nvcr.io/nvidia/pytorch:25.02-py3` and sets up:
 
-- A Python venv at `/opt/fastai-venv` with fastai, PyTorch, transformers, diffusers, and related ML/data-science libraries
-- JupyterLab on port 8888 (no auth token)
-- Chinese font support (Noto Sans CJK SC) for matplotlib
-- Claude Code CLI via Node.js 22
+- **`work` user** with passwordless sudo (`gosu` used throughout for user-context ops)
+- **Python venv** at `/home/work/venvs/llm` (clean, no `--system-site-packages`); torch/torchvision/triton/nvidia_* symlinked from system site-packages
+- **Multi-layer pip install** driven by three requirement files:
+  - `requirements-fastai.in` — fastai and related libs (Layer 2)
+  - `requirements-llm.in` — HuggingFace transformers, diffusers, etc. (Layer 3)
+  - `requirements-extra.in` — Gradio, Claude Code CLI (Layer 4)
+  - `constraints.txt` — pinned versions shared by all layers
+- **JupyterLab** on port 8888 (no auth), venv registered as Jupyter kernel via `--user` ipykernel install
+- **Chinese mirrors** for apt (Aliyun), pip (`PIP_INDEX_URL`), and npm (npmmirror)
+- **Chinese font** support (Noto Sans CJK SC) for matplotlib
+- **Claude Code CLI** via Node.js 22
+- **Course repos** cloned into `/home/work/`: `fastai-course-part2` and `course22p2`
+- **`configure.sh`** — user-level config (matplotlib, Jupyter settings, git, shell); runs as `work` via `gosu work /configure.sh` in Layer 6
+
+## Dependency Pinning
+
+```bash
+# Regenerate constraints.txt inside a running container:
+docker run --rm <image> bash -c '$VIRTUAL_ENV/bin/pip freeze --exclude-editable' > constraints.txt
+# Then remove lines starting with `[entrypoint]` and any `@ file:///` lines (symlinked packages)
+```
+
+An empty `constraints.txt` means no pinning (bootstrap mode).
