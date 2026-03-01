@@ -85,17 +85,13 @@ RUN gosu work $VIRTUAL_ENV/bin/pip install --no-cache-dir \
     -c /tmp/constraints.txt -r /tmp/requirements-extra.in && \
     npm install -g --registry https://registry.npmmirror.com @anthropic-ai/claude-code
 
-# Layer 5: Clone course repos (placed late — repo updates won't invalidate package cache)
-# gosu work ensures repo directories are owned by work from the start — no chown needed
-RUN gosu work git clone https://github.com/goosmanlei/fastai-course-part2.git /home/work/fastai-course-part2 && \
-    gosu work git clone https://github.com/fastai/course22p2.git /home/work/course22p2 && \
-    gosu work $VIRTUAL_ENV/bin/python -c \
-        "import site; open(site.getsitepackages()[0]+'/course22p2.pth','w').write('/home/work/course22p2\n')"
-
-# Layer 6: Configuration (matplotlib, Jupyter, git, shell, ipykernel)
+# Layer 5: Configuration (matplotlib, Jupyter, git, shell, ipykernel)
+# course22p2.pth registered here so venv can import it once cloned at runtime by entrypoint.sh
 # Root-only ops run here; work-user config delegated to configure.sh
 COPY configure.sh /configure.sh
 RUN chmod +x /configure.sh && \
+    gosu work $VIRTUAL_ENV/bin/python -c \
+        "import site; open(site.getsitepackages()[0]+'/course22p2.pth','w').write('/home/work/course22p2\n')" && \
     git config --system user.email "leiguoguo.ai@gmail.com" && \
     git config --system user.name "goosmanlei" && \
     git config --system alias.co checkout && \
@@ -108,7 +104,6 @@ RUN chmod +x /configure.sh && \
 
 EXPOSE 8888
 
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-CMD jupyter lab
+CMD $VIRTUAL_ENV/bin/jupyter lab

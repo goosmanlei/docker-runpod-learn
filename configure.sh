@@ -46,6 +46,3 @@ EOF
 # Register venv as a kernel for system JupyterLab.
 # --user installs to ~/.local/share/jupyter/kernels/ which system jupyter discovers automatically.
 $VIRTUAL_ENV/bin/python -m ipykernel install --user --name llm-learn --display-name "LLM Learn"
-
-# Activate venv in work's shell
-printf 'source %s/bin/activate\n' "$VIRTUAL_ENV" >> /home/work/.bashrc
