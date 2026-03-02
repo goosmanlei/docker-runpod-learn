@@ -25,14 +25,13 @@ docker build --platform linux/amd64 -f Dockerfile.runpod -t goosmanlei/runpod-le
 
 ## Architecture
 
-`Dockerfile.runpod` is based on `runpod/pytorch:1.0.3-cu1300-torch290-ubuntu2404` (PyTorch 2.9.0, CUDA 13.0, Ubuntu 24.04) and sets up:
+`Dockerfile.runpod` is based on `runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404` (PyTorch 2.8.0, CUDA 12.8.1, Ubuntu 24.04) and sets up:
 
 - **`work` user** with passwordless sudo (`gosu` used throughout for user-context ops)
 - **Python venv** at `/home/work/venvs/llm` (clean, no `--system-site-packages`); torch/torchvision/triton/nvidia_* symlinked from system site-packages
-- **Multi-layer pip install** driven by three requirement files:
+- **Multi-layer pip install** driven by two requirement files:
   - `requirements-fastai.in` — fastai and related libs (Layer 2)
-  - `requirements-llm.in` — HuggingFace transformers, diffusers, etc. (Layer 3)
-  - `requirements-extra.in` — Gradio, Claude Code CLI (Layer 4)
+  - `requirements-llm.in` — HuggingFace transformers, diffusers, Gradio, Claude Code CLI (Layer 3)
   - `constraints.txt` — pinned versions shared by all layers
 - **JupyterLab** on port 8888 (no auth), venv registered as Jupyter kernel via `--user` ipykernel install
 - **Chinese mirrors** for apt (Aliyun), pip (`PIP_INDEX_URL`), and npm (npmmirror)
