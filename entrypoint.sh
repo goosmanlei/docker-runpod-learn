@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Fix /workspace ownership so work user can write to it
+chown work:work /workspace 2>/dev/null || true
+
 # Fix NVML library path for btop GPU monitoring.
 # The NVIDIA container runtime injects libnvidia-ml.so.1 at startup,
 # but btop 1.2.x (Ubuntu 22.04 apt) looks for libnvidia-ml.so (unversioned).

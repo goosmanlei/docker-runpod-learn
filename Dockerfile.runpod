@@ -28,6 +28,7 @@ RUN useradd -m -s /bin/bash work && \
 ENV VIRTUAL_ENV=/home/work/venvs/llm
 ENV JUPYTERLAB_SETTINGS_DIR=/home/work/.jupyter/lab/user-settings
 ENV MPLCONFIGDIR=/home/work/.config/matplotlib
+ENV HF_HOME=/home/work/.cache/huggingface
 
 # Create a clean venv (no --system-site-packages to avoid version conflicts).
 # Then symlink only torch/nvidia/triton packages from the system site-packages into the
