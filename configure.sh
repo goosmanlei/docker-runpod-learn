@@ -21,7 +21,7 @@ c.ServerApp.token = ''
 c.ServerApp.allow_origin = '*'
 c.ServerApp.allow_remote_access = True
 c.ServerApp.disable_check_xsrf = True
-c.ServerApp.root_dir = '/home/work/fastai-course-part2'
+c.ServerApp.root_dir = '/home/work'
 EOF
 
 # JupyterLab keyboard shortcuts

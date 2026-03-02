@@ -73,16 +73,11 @@ COPY requirements-fastai.in /tmp/
 RUN gosu work $VIRTUAL_ENV/bin/pip install --no-cache-dir \
     -c /tmp/constraints.txt -r /tmp/requirements-fastai.in
 
-# Layer 3: HuggingFace LLM 阶段
+# Layer 3: HuggingFace LLM + Gradio + Claude Code CLI
 # (einops/safetensors/flash_attn 2.7.3 已在基础镜像中，无需重装)
 COPY requirements-llm.in /tmp/
 RUN gosu work $VIRTUAL_ENV/bin/pip install --no-cache-dir \
-    -c /tmp/constraints.txt -r /tmp/requirements-llm.in
-
-# Layer 4: Gradio + Claude Code CLI
-COPY requirements-extra.in /tmp/
-RUN gosu work $VIRTUAL_ENV/bin/pip install --no-cache-dir \
-    -c /tmp/constraints.txt -r /tmp/requirements-extra.in && \
+    -c /tmp/constraints.txt -r /tmp/requirements-llm.in && \
     npm install -g --registry https://registry.npmmirror.com @anthropic-ai/claude-code
 
 # Layer 5: Configuration (matplotlib, Jupyter, git, shell, ipykernel)
