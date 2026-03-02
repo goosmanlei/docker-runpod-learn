@@ -13,7 +13,7 @@ This repo contains a Dockerfile for running the [fast.ai course part 2](https://
 
 ```bash
 # RunPod image (linux/amd64 only — nvcr.io base has no arm64 variant)
-docker build --platform linux/amd64 -f Dockerfile.runpod -t goosmanlei/runpod-for-fastai-course .
+docker build --platform linux/amd64 -f Dockerfile.runpod -t goosmanlei/runpod-learn .
 ```
 
 ## Run (macpod)
