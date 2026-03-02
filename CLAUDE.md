@@ -34,7 +34,6 @@ docker build --platform linux/amd64 -f Dockerfile.runpod -t goosmanlei/runpod-le
   - `requirements-llm.in` — HuggingFace transformers, diffusers, Gradio, Claude Code CLI (Layer 3)
   - `constraints.txt` — pinned versions shared by all layers
 - **JupyterLab** on port 8888 (no auth), venv registered as Jupyter kernel via `--user` ipykernel install
-- **Chinese mirrors** for apt (Aliyun), pip (`PIP_INDEX_URL`), and npm (npmmirror)
 - **Chinese font** support (Noto Sans CJK SC) for matplotlib
 - **Claude Code CLI** via Node.js 22
 - **Course repos** cloned into `/home/work/`: `fastai-course-part2` and `course22p2`

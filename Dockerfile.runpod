@@ -12,14 +12,7 @@ ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=all
 
 # Layer 1: System deps + Node.js
-# Switch Ubuntu apt sources to Aliyun mirror (covers both old sources.list and
-# Ubuntu 24.04's DEB822 *.sources format) before any apt-get update.
-# NodeSource setup runs apt-get update internally; no separate update needed.
-RUN grep -rl 'archive.ubuntu.com\|security.ubuntu.com' /etc/apt/ 2>/dev/null | \
-    xargs -r sed -i \
-        -e 's|http://archive.ubuntu.com/ubuntu|https://mirrors.aliyun.com/ubuntu|g' \
-        -e 's|http://security.ubuntu.com/ubuntu|https://mirrors.aliyun.com/ubuntu|g' && \
-    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y --no-install-recommends \
         git openssh-client graphviz vim curl wget fonts-noto-cjk btop \
         ffmpeg gosu sudo python3-venv \
@@ -34,10 +27,6 @@ RUN useradd -m -s /bin/bash work && \
 ENV VIRTUAL_ENV=/home/work/venvs/llm
 ENV JUPYTERLAB_SETTINGS_DIR=/home/work/.jupyter/lab/user-settings
 ENV MPLCONFIGDIR=/home/work/.config/matplotlib
-
-# Use Aliyun PyPI mirror for all pip installs
-ENV PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
-ENV PIP_TRUSTED_HOST=mirrors.aliyun.com
 
 # Create a clean venv (no --system-site-packages to avoid version conflicts).
 # Then symlink only torch/nvidia/triton packages from the system site-packages into the
@@ -74,7 +63,7 @@ RUN gosu work $VIRTUAL_ENV/bin/pip install --no-cache-dir \
 COPY requirements-llm.in /tmp/
 RUN gosu work $VIRTUAL_ENV/bin/pip install --no-cache-dir \
     -c /tmp/constraints.txt -r /tmp/requirements-llm.in && \
-    npm install -g --registry https://registry.npmmirror.com @anthropic-ai/claude-code
+    npm install -g @anthropic-ai/claude-code
 
 # Layer 5: Configuration (matplotlib, Jupyter, git, shell, ipykernel)
 # course22p2.pth registered here so venv can import it once cloned at runtime by entrypoint.sh
