@@ -13,18 +13,13 @@ if [ -f "$NVML_VERSIONED" ] && [ ! -e "$NVML_PATH" ]; then
     ln -sf "$NVML_VERSIONED" "$NVML_PATH" 2>/dev/null || true
 fi
 
-# Clone or pull course repos as work user
-if [ ! -d /home/work/fastai-course-part2/.git ]; then
-    echo "[entrypoint] Cloning fastai-course-part2..."
-    gosu work git clone https://github.com/goosmanlei/fastai-course-part2.git /home/work/fastai-course-part2 || true
+# Clone or pull course repo as work user
+if [ ! -d /home/work/learning-the-principles-of-llms/.git ]; then
+    echo "[entrypoint] Cloning learning-the-principles-of-llms..."
+    gosu work git clone https://github.com/goosmanlei/learning-the-principles-of-llms.git /home/work/learning-the-principles-of-llms || true
 else
-    echo "[entrypoint] Pulling latest fastai-course-part2..."
-    gosu work git -C /home/work/fastai-course-part2 pull --ff-only 2>&1 || true
-fi
-
-if [ ! -d /home/work/course22p2/.git ]; then
-    echo "[entrypoint] Cloning course22p2..."
-    gosu work git clone https://github.com/fastai/course22p2.git /home/work/course22p2 || true
+    echo "[entrypoint] Pulling latest learning-the-principles-of-llms..."
+    gosu work git -C /home/work/learning-the-principles-of-llms pull --ff-only 2>&1 || true
 fi
 
 # Drop to work user for the main process (gosu preserves signals)

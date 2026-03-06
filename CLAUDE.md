@@ -52,7 +52,7 @@ docker build --platform linux/amd64 -f Dockerfile.runpod \
 - **JupyterLab** on port 8888 (no auth), venv registered as Jupyter kernel via `--user` ipykernel install
 - **Chinese font** support (Noto Sans CJK SC) for matplotlib
 - **Claude Code CLI** via Node.js 22
-- **Course repos** cloned into `/home/work/`: `fastai-course-part2` and `course22p2`
+- **Course repo** cloned into `/home/work/`: `learning-the-principles-of-llms`
 - **`configure.sh`** — user-level config (matplotlib, Jupyter settings, git, shell); runs as `work` via `gosu work /configure.sh` in Layer 6
 
 ## Dependency Pinning
