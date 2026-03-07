@@ -13,10 +13,17 @@ if [ -f "$NVML_VERSIONED" ] && [ ! -e "$NVML_PATH" ]; then
     ln -sf "$NVML_VERSIONED" "$NVML_PATH" 2>/dev/null || true
 fi
 
-# Clone or pull HuggingFace LLM course repo as work user
+# Clone or pull HuggingFace LLM course repo as work user.
+# GITHUB_PERSONAL_ACCESS_TOKEN is injected by RunPod Secrets at runtime.
+if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
+    CLONE_URL="https://${GITHUB_PERSONAL_ACCESS_TOKEN}@github.com/goosmanlei/llm-hf.git"
+else
+    CLONE_URL="https://github.com/goosmanlei/llm-hf.git"
+fi
+
 if [ ! -d /home/work/llm-hf/.git ]; then
     echo "[entrypoint] Cloning llm-hf..."
-    gosu work git clone https://github.com/goosmanlei/llm-hf.git /home/work/llm-hf || true
+    gosu work git clone "$CLONE_URL" /home/work/llm-hf || true
 else
     echo "[entrypoint] Pulling latest llm-hf..."
     gosu work git -C /home/work/llm-hf pull --ff-only 2>&1 || true
