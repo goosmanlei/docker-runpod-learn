@@ -40,7 +40,7 @@ function new_or_attach(){
     $tmux_bin attach-session -t "${SESS_NAME:-$2}" >/dev/null 2>/dev/null
     if [ $? != 0 ] ;
     then
-        func="split_$1_pane"
+        func="$1"
         $func "${SESS_NAME:-$2}" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}" "${13}"
         $tmux_bin -2 attach-session -d
     fi
@@ -51,6 +51,12 @@ function split_1_pane() {
     $tmux_bin new-session -s "$1" -d "$2"
 }
 
+# 拆分左主右从共2个工作区
+function split_2_pane_v() {
+    $tmux_bin new-session -s "$1" -d "$2"
+    $tmux_bin split-window -v -p 40 "$3"
+    $tmux_bin select-pane -L
+}
 
 # 拆分左主右从共2个工作区
 function split_2_pane() {
@@ -179,6 +185,9 @@ case ${CMD_ARGV[1]} in
     ;;
     n ) # 新建会话
         $tmux_bin new-session -A -s ${CMD_ARGV[2]}
+    ;;
+    m ) # monitor
+        new_or_attach split_2_pane_v monitor btop nvtop
     ;;
     * )
         $tmux_bin $@

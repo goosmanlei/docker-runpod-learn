@@ -71,6 +71,7 @@ RUN gosu work $CONDA_ENV_PATH/bin/pip install --no-cache-dir \
 # Layer 5: Configuration (matplotlib, Jupyter, git, shell, ipykernel)
 COPY --chmod=755 t /home/work/bin/t
 COPY .tmux.conf /home/work/.tmux.conf
+COPY .vimrc /home/work/.vimrc
 COPY configure.sh /configure.sh
 RUN chmod +x /configure.sh && \
     git config --system user.email "leiguoguo.ai@gmail.com" && \
