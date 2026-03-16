@@ -54,22 +54,22 @@ function split_1_pane() {
 # 拆分左主右从共2个工作区
 function split_2_pane_v() {
     $tmux_bin new-session -s "$1" -d "$2"
-    $tmux_bin split-window -t "$1" -v -p 40 "$3"
+    $tmux_bin split-window -t "$1" -v -l 40% "$3"
     $tmux_bin select-pane -t "$1" -U
 }
 
 # 拆分左主右从共2个工作区
 function split_2_pane() {
     $tmux_bin new-session -s "$1" -d "$2"
-    $tmux_bin split-window -t "$1" -h -p 40 "$3"
+    $tmux_bin split-window -t "$1" -h -l 40% "$3"
     $tmux_bin select-pane -t "$1" -L
 }
 
 # 拆分左主右从共3个工作区
 function split_3_pane() {
     $tmux_bin new-session -s "$1" -d "$2"
-    $tmux_bin split-window -t "$1" -h -p 40 "$3"
-    $tmux_bin split-window -t "$1" -v -p 50 "$4"
+    $tmux_bin split-window -t "$1" -h -l 40% "$3"
+    $tmux_bin split-window -t "$1" -v -l 50% "$4"
     $tmux_bin select-pane -t "$1" -L
 }
 
@@ -77,20 +77,20 @@ function split_3_pane() {
 # split_4_pane <标识符> <命令1> <命令2> <命令3> <命令4>
 function split_4_pane() {
     $tmux_bin new-session -s "$1" -d "$2"
-    $tmux_bin split-window -t "$1" -h -p 40 "$3"
-    $tmux_bin split-window -t "$1" -v -p 67 "$4"
-    $tmux_bin split-window -t "$1" -v -p 50 "$5"
+    $tmux_bin split-window -t "$1" -h -l 40% "$3"
+    $tmux_bin split-window -t "$1" -v -l 67% "$4"
+    $tmux_bin split-window -t "$1" -v -l 50% "$5"
     $tmux_bin select-pane -t "$1" -L
 }
 
 # 拆分5个工作区
 function split_5_pane() {
     $tmux_bin new-session -s "$1" -d "$2"
-    $tmux_bin split-window -t "$1" -h -p 40 "$4"
-    $tmux_bin split-window -t "$1" -v -p 67 "$5"
-    $tmux_bin split-window -t "$1" -v -p 50 "$6"
+    $tmux_bin split-window -t "$1" -h -l 40% "$4"
+    $tmux_bin split-window -t "$1" -v -l 67% "$5"
+    $tmux_bin split-window -t "$1" -v -l 50% "$6"
     $tmux_bin select-pane -t "$1" -L
-    $tmux_bin split-window -t "$1" -v -p 30 "$3"
+    $tmux_bin split-window -t "$1" -v -l 30% "$3"
     $tmux_bin select-pane -t "$1" -U
 }
 
@@ -98,25 +98,25 @@ function split_5_pane() {
 # 拆分6个工作区
 function split_6_pane() {
     $tmux_bin new-session -s "$1" -d "$2"
-    $tmux_bin split-window -t "$1" -h -p 40 "$4"
-    $tmux_bin split-window -t "$1" -v -p 75 "$5"
-    $tmux_bin split-window -t "$1" -v -p 67 "$6"
-    $tmux_bin split-window -t "$1" -v -p 50 "$7"
+    $tmux_bin split-window -t "$1" -h -l 40% "$4"
+    $tmux_bin split-window -t "$1" -v -l 75% "$5"
+    $tmux_bin split-window -t "$1" -v -l 67% "$6"
+    $tmux_bin split-window -t "$1" -v -l 50% "$7"
     $tmux_bin select-pane -t "$1" -L
-    $tmux_bin split-window -t "$1" -v -p 30 "$3"
+    $tmux_bin split-window -t "$1" -v -l 30% "$3"
     $tmux_bin select-pane -t "$1" -U
 }
 
 # 拆分7个工作区
 function split_7_pane() {
     $tmux_bin new-session -s "$1" -d "$2"
-    $tmux_bin split-window -t "$1" -h -p 40 "$5"
-    $tmux_bin split-window -t "$1" -v -p 75 "$6"
-    $tmux_bin split-window -t "$1" -v -p 67 "$7"
-    $tmux_bin split-window -t "$1" -v -p 50 "$8"
+    $tmux_bin split-window -t "$1" -h -l 40% "$5"
+    $tmux_bin split-window -t "$1" -v -l 75% "$6"
+    $tmux_bin split-window -t "$1" -v -l 67% "$7"
+    $tmux_bin split-window -t "$1" -v -l 50% "$8"
     $tmux_bin select-pane -t "$1" -L
-    $tmux_bin split-window -t "$1" -v -p 40 "$3"
-    $tmux_bin split-window -t "$1" -v -p 50 "$4"
+    $tmux_bin split-window -t "$1" -v -l 40% "$3"
+    $tmux_bin split-window -t "$1" -v -l 50% "$4"
     $tmux_bin select-pane -t "$1" -U
     $tmux_bin select-pane -t "$1" -U
 }
@@ -124,14 +124,14 @@ function split_7_pane() {
 # 拆分8个工作区
 function split_8_pane() {
     $tmux_bin new-session -s "$1" -d "$2"
-    $tmux_bin split-window -t "$1" -h -p 40 "$5"
-    $tmux_bin split-window -t "$1" -v -p 80 "$6"
-    $tmux_bin split-window -t "$1" -v -p 75 "$7"
-    $tmux_bin split-window -t "$1" -v -p 67 "$8"
-    $tmux_bin split-window -t "$1" -v -p 50 "$9"
+    $tmux_bin split-window -t "$1" -h -l 40% "$5"
+    $tmux_bin split-window -t "$1" -v -l 80% "$6"
+    $tmux_bin split-window -t "$1" -v -l 75% "$7"
+    $tmux_bin split-window -t "$1" -v -l 67% "$8"
+    $tmux_bin split-window -t "$1" -v -l 50% "$9"
     $tmux_bin select-pane -t "$1" -L
-    $tmux_bin split-window -t "$1" -v -p 50 "$3"
-    $tmux_bin split-window -t "$1" -v -p 50 "$4"
+    $tmux_bin split-window -t "$1" -v -l 50% "$3"
+    $tmux_bin split-window -t "$1" -v -l 50% "$4"
     $tmux_bin select-pane -t "$1" -U
     $tmux_bin select-pane -t "$1" -U
 }
@@ -140,15 +140,15 @@ function split_8_pane() {
 # 拆分9个工作区
 function split_9_pane() {
     $tmux_bin new-session -s "$1" -d "$2"
-    $tmux_bin split-window -t "$1" -h -p 40 "$5"
-    $tmux_bin split-window -t "$1" -v -p 84 "$6"
-    $tmux_bin split-window -t "$1" -v -p 80 "$7"
-    $tmux_bin split-window -t "$1" -v -p 75 "$8"
-    $tmux_bin split-window -t "$1" -v -p 67 "$9"
-    $tmux_bin split-window -t "$1" -v -p 50 "${10}"
+    $tmux_bin split-window -t "$1" -h -l 40% "$5"
+    $tmux_bin split-window -t "$1" -v -l 84% "$6"
+    $tmux_bin split-window -t "$1" -v -l 80% "$7"
+    $tmux_bin split-window -t "$1" -v -l 75% "$8"
+    $tmux_bin split-window -t "$1" -v -l 67% "$9"
+    $tmux_bin split-window -t "$1" -v -l 50% "${10}"
     $tmux_bin select-pane -t "$1" -L
-    $tmux_bin split-window -t "$1" -v -p 50 "$3"
-    $tmux_bin split-window -t "$1" -v -p 50 "$4"
+    $tmux_bin split-window -t "$1" -v -l 50% "$3"
+    $tmux_bin split-window -t "$1" -v -l 50% "$4"
     $tmux_bin select-pane -t "$1" -U
     $tmux_bin select-pane -t "$1" -U
 }
@@ -157,16 +157,16 @@ function split_9_pane() {
 # 拆分10个工作区
 function split_10_pane() {
     $tmux_bin new-session -s "$1" -d "$2"
-    $tmux_bin split-window -t "$1" -h -p 40 "$6"
-    $tmux_bin split-window -t "$1" -v -p 84 "$7"
-    $tmux_bin split-window -t "$1" -v -p 80 "$8"
-    $tmux_bin split-window -t "$1" -v -p 75 "$9"
-    $tmux_bin split-window -t "$1" -v -p 67 "${10}"
-    $tmux_bin split-window -t "$1" -v -p 50 "${11}"
+    $tmux_bin split-window -t "$1" -h -l 40% "$6"
+    $tmux_bin split-window -t "$1" -v -l 84% "$7"
+    $tmux_bin split-window -t "$1" -v -l 80% "$8"
+    $tmux_bin split-window -t "$1" -v -l 75% "$9"
+    $tmux_bin split-window -t "$1" -v -l 67% "${10}"
+    $tmux_bin split-window -t "$1" -v -l 50% "${11}"
     $tmux_bin select-pane -t "$1" -L
-    $tmux_bin split-window -t "$1" -v -p 60 "$3"
-    $tmux_bin split-window -t "$1" -v -p 67 "$4"
-    $tmux_bin split-window -t "$1" -v -p 50 "$5"
+    $tmux_bin split-window -t "$1" -v -l 60% "$3"
+    $tmux_bin split-window -t "$1" -v -l 67% "$4"
+    $tmux_bin split-window -t "$1" -v -l 50% "$5"
     $tmux_bin select-pane -t "$1" -U
     $tmux_bin select-pane -t "$1" -U
     $tmux_bin select-pane -t "$1" -U
@@ -193,4 +193,5 @@ case ${CMD_ARGV[1]} in
         $tmux_bin $@
     ;;
 esac
+
 
