@@ -18,7 +18,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES=all
 # Layer 1: System deps + Node.js
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y --no-install-recommends \
-        git openssh-client graphviz vim curl wget fonts-noto-cjk \
+        git openssh-client openssh-server graphviz vim curl wget fonts-noto-cjk \
         ffmpeg gosu sudo tmux \
         locales nodejs && \
     locale-gen en_US.UTF-8 && \
@@ -86,7 +86,15 @@ RUN chmod +x /configure.sh && \
     gosu work /configure.sh && \
     rm /configure.sh
 
-EXPOSE 8888
+# Configure sshd: disable root login, allow password auth on port 22, set work user password
+RUN mkdir -p /var/run/sshd && \
+    sed -i 's/#Port 22/Port 22/' /etc/ssh/sshd_config && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
+    sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
+    echo "work:goosman" | chpasswd
+
+EXPOSE 22 8888
 
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

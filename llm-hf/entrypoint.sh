@@ -29,5 +29,8 @@ else
     gosu work git -C /home/work/llm-hf pull --ff-only 2>&1 || true
 fi
 
+# Start sshd on port 22
+/usr/sbin/sshd
+
 # Drop to work user for the main process (gosu preserves signals)
 exec gosu work "$@"
