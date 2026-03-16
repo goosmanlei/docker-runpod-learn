@@ -9,8 +9,8 @@ set -euo pipefail
 IMAGE="goosmanlei/runpod-learn-hf"
 
 TAGS=(
-    "cu1281:runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404:constraints-cu1281.txt:https://download.pytorch.org/whl/cu128"
     "cu1241:runpod/pytorch:0.7.0-cu1241-torch240-ubuntu2204:constraints-cu1241.txt:https://download.pytorch.org/whl/cu124"
+    "cu1281:runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404:constraints-cu1281.txt:https://download.pytorch.org/whl/cu128"
 )
 
 PIN=false
