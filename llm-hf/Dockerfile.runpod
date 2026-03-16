@@ -27,7 +27,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
 # Layer 1.5: nvtop + btop (available in Ubuntu universe repo)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends nvtop btop && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    printf 'LANG=en_US.UTF-8\nLC_ALL=en_US.UTF-8\nMAMBA_ROOT_PREFIX=/home/work/miniforge3\n' >> /etc/environment
 
 # Create work user with passwordless sudo
 RUN useradd -m -s /bin/bash work && \
@@ -69,7 +70,8 @@ RUN gosu work $CONDA_ENV_PATH/bin/pip install --no-cache-dir \
     npm install -g @anthropic-ai/claude-code
 
 # Layer 5: Configuration (matplotlib, Jupyter, git, shell, ipykernel)
-COPY --chmod=755 t /home/work/bin/t
+RUN gosu work mkdir -p /home/work/bin
+COPY --chown=work:work --chmod=755 t /home/work/bin/t
 COPY .tmux.conf /home/work/.tmux.conf
 COPY .vimrc /home/work/.vimrc
 COPY configure.sh /configure.sh
