@@ -43,7 +43,3 @@ cat > /home/work/.jupyter/lab/user-settings/@jupyterlab/shortcuts-extension/shor
   ]
 }
 EOF
-
-# Register conda env as a kernel for system JupyterLab.
-# --user installs to ~/.local/share/jupyter/kernels/ which system jupyter discovers automatically.
-$CONDA_ENV_PATH/bin/python -m ipykernel install --user --name llm-hf --display-name "llm-hf"
