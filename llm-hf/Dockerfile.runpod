@@ -82,7 +82,7 @@ RUN chmod +x /configure.sh && \
     git config --system alias.br branch && \
     git config --system alias.ci commit && \
     git config --system alias.st status && \
-    printf 'source %s/etc/profile.d/mamba.sh\nmamba activate llm-hf\n' "$CONDA_ROOT" >> /etc/bash.bashrc && \
+    printf 'source %s/etc/profile.d/mamba.sh\nmamba activate llm-hf\n[ -f /home/work/.env_runpod ] && source /home/work/.env_runpod\n' "$CONDA_ROOT" >> /etc/bash.bashrc && \
     gosu work /configure.sh && \
     rm /configure.sh
 

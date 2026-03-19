@@ -29,6 +29,14 @@ else
     gosu work git -C /home/work/llm-hf pull --ff-only 2>&1 || true
 fi
 
+# Write RunPod-injected secrets to work user's env file so interactive shells inherit them
+{
+    [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ] && printf 'export GITHUB_PERSONAL_ACCESS_TOKEN=%q\n' "$GITHUB_PERSONAL_ACCESS_TOKEN"
+    [ -n "$HF_TOKEN" ] && printf 'export HF_TOKEN=%q\n' "$HF_TOKEN"
+} > /home/work/.env_runpod
+chown work:work /home/work/.env_runpod
+chmod 600 /home/work/.env_runpod
+
 # Start sshd on port 22
 /usr/sbin/sshd
 
