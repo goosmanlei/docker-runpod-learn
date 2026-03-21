@@ -3,6 +3,9 @@ FROM ${BASE_IMAGE}
 ARG CONSTRAINTS_FILE=constraints-cu1281.txt
 ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cu128
 ARG PYTHON_VERSION=3.11
+# Pre-built wheel URL from https://github.com/Dao-AILab/flash-attention/releases
+# or just "flash-attn" to compile from source (slow, ~30 min).
+ARG FLASH_ATTN_WHEEL=flash-attn
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -68,6 +71,12 @@ COPY requirements-hf.in /tmp/
 RUN gosu work $CONDA_ENV_PATH/bin/pip install --no-cache-dir \
     -c /tmp/constraints.txt -r /tmp/requirements-hf.in && \
     npm install -g @anthropic-ai/claude-code
+
+# Layer 4.5: flash-attn (isolated layer — won't invalidate Layer 3/4 cache on rebuild)
+# --no-build-isolation reuses the already-installed torch/triton instead of
+# re-downloading them into an isolated build env; required for source builds.
+RUN gosu work $CONDA_ENV_PATH/bin/pip install --no-cache-dir --no-build-isolation \
+    "${FLASH_ATTN_WHEEL}"
 
 # Layer 5: Configuration (matplotlib, Jupyter, git, shell, ipykernel)
 RUN gosu work mkdir -p /home/work/bin

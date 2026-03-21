@@ -8,9 +8,13 @@ set -euo pipefail
 
 IMAGE="goosmanlei/runpod-learn-hf"
 
+# Format: tag|base_image|constraints_file|torch_index_url|flash_attn_wheel
+# flash_attn_wheel: pre-built wheel URL from github.com/Dao-AILab/flash-attention/releases
+#   cu1241 torch2.6.0+cu124 → flash_attn 2.8.3 cu12torch2.6 (exact match)
+#   cu1281 torch2.10.0+cu128 → flash_attn 2.8.3 cu12torch2.8 (closest for cp311)
 TAGS=(
-    "cu1241:runpod/pytorch:0.7.0-cu1241-torch240-ubuntu2204:constraints-cu1241.txt:https://download.pytorch.org/whl/cu124"
-    "cu1281:runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404:constraints-cu1281.txt:https://download.pytorch.org/whl/cu128"
+    "cu1241|runpod/pytorch:0.7.0-cu1241-torch240-ubuntu2204|constraints-cu1241.txt|https://download.pytorch.org/whl/cu124|https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3%2Bcu12torch2.6cxx11abiFALSE-cp311-cp311-linux_x86_64.whl"
+    "cu1281|runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404|constraints-cu1281.txt|https://download.pytorch.org/whl/cu128|https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3%2Bcu12torch2.8cxx11abiFALSE-cp311-cp311-linux_x86_64.whl"
 )
 
 PIN=false
@@ -20,20 +24,20 @@ done
 
 # ── 1. Build ────────────────────────────────────────────────────────────────
 for entry in "${TAGS[@]}"; do
-    IFS=: read -r tag base1 base2 constraints torch_index <<< "$entry"
-    base="$base1:$base2"
+    IFS='|' read -r tag base constraints torch_index flash_attn_wheel <<< "$entry"
     echo "==> Building $IMAGE:$tag (base: $base, constraints: $constraints, torch: $torch_index)"
     docker build --platform linux/amd64 -f Dockerfile.runpod \
         --build-arg BASE_IMAGE="$base" \
         --build-arg CONSTRAINTS_FILE="$constraints" \
         --build-arg TORCH_INDEX_URL="$torch_index" \
+        --build-arg FLASH_ATTN_WHEEL="$flash_attn_wheel" \
         -t "$IMAGE:$tag" .
 done
 
 # ── 1b. Pin (--pin only) ─────────────────────────────────────────────────────
 if $PIN; then
     for entry in "${TAGS[@]}"; do
-        IFS=: read -r tag base1 base2 constraints torch_index <<< "$entry"
+        IFS='|' read -r tag base constraints torch_index flash_attn_wheel <<< "$entry"
         echo "==> Pinning $IMAGE:$tag -> $constraints"
         docker run --rm "$IMAGE:$tag" \
             bash -c '$CONDA_ENV_PATH/bin/pip freeze --exclude-editable' \
@@ -49,7 +53,7 @@ fi
 
 # ── 2. Push ─────────────────────────────────────────────────────────────────
 for entry in "${TAGS[@]}"; do
-    tag="${entry%%:*}"
+    tag="${entry%%|*}"
     echo "==> Pushing $IMAGE:$tag"
     docker push "$IMAGE:$tag"
 done
