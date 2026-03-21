@@ -8,11 +8,13 @@ set -euo pipefail
 
 IMAGE="goosmanlei/runpod-learn-hf"
 
-# Format: tag:base1:base2:constraints:flash_attn_file:torch_index_url
+# Format: tag:base1:base2:constraints:torch_constraints:flash_attn_file:torch_index_url
+# torch_constraints: minimal file with only torch/torchvision/torchaudio pins —
+#   keeps the ~5GB torch layer cached when re-pinning other packages.
 # flash_attn_file: per-tag file containing a pre-built wheel URL (empty file = skip)
 TAGS=(
-    "cu1241:runpod/pytorch:0.7.0-cu1241-torch240-ubuntu2204:constraints-cu1241.txt:flash-attn-cu1241.txt:https://download.pytorch.org/whl/cu124"
-    "cu1281:runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404:constraints-cu1281.txt:flash-attn-cu1281.txt:https://download.pytorch.org/whl/cu128"
+    "cu1241:runpod/pytorch:0.7.0-cu1241-torch240-ubuntu2204:constraints-cu1241.txt:constraints-torch-cu1241.txt:flash-attn-cu1241.txt:https://download.pytorch.org/whl/cu124"
+    "cu1281:runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404:constraints-cu1281.txt:constraints-torch-cu1281.txt:flash-attn-cu1281.txt:https://download.pytorch.org/whl/cu128"
 )
 
 PIN=false
@@ -22,12 +24,13 @@ done
 
 # ── 1. Build ────────────────────────────────────────────────────────────────
 for entry in "${TAGS[@]}"; do
-    IFS=: read -r tag base1 base2 constraints flash_attn_file torch_index <<< "$entry"
+    IFS=: read -r tag base1 base2 constraints torch_constraints flash_attn_file torch_index <<< "$entry"
     base="$base1:$base2"
     echo "==> Building $IMAGE:$tag (base: $base, constraints: $constraints, torch: $torch_index)"
     docker build --platform linux/amd64 -f Dockerfile.runpod \
         --build-arg BASE_IMAGE="$base" \
         --build-arg CONSTRAINTS_FILE="$constraints" \
+        --build-arg TORCH_CONSTRAINTS_FILE="$torch_constraints" \
         --build-arg FLASH_ATTN_FILE="$flash_attn_file" \
         --build-arg TORCH_INDEX_URL="$torch_index" \
         -t "$IMAGE:$tag" .
@@ -36,7 +39,7 @@ done
 # ── 1b. Pin (--pin only) ─────────────────────────────────────────────────────
 if $PIN; then
     for entry in "${TAGS[@]}"; do
-        IFS=: read -r tag base1 base2 constraints flash_attn_file torch_index <<< "$entry"
+        IFS=: read -r tag base1 base2 constraints torch_constraints flash_attn_file torch_index <<< "$entry"
         echo "==> Pinning $IMAGE:$tag -> $constraints"
         docker run --rm "$IMAGE:$tag" \
             bash -c '$CONDA_ENV_PATH/bin/pip freeze --exclude-editable' \
