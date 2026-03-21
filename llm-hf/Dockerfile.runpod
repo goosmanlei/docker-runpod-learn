@@ -3,6 +3,8 @@ FROM ${BASE_IMAGE}
 ARG CONSTRAINTS_FILE=constraints-cu1281.txt
 ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cu128
 ARG PYTHON_VERSION=3.11
+# Per-tag flash-attn wheel file. Empty file = skip install (e.g. cu1281).
+ARG FLASH_ATTN_FILE=flash-attn-cu1281.txt
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -69,6 +71,14 @@ COPY requirements-hf.in /tmp/
 RUN gosu work $CONDA_ENV_PATH/bin/pip install --no-cache-dir \
     -c /tmp/constraints.txt -r /tmp/requirements-hf.in && \
     npm install -g @anthropic-ai/claude-code
+
+# Layer 4.5: flash-attn (isolated — preserves Layer 3/4 cache on rebuild)
+# --no-build-isolation reuses installed torch/triton; required for pre-built wheels too.
+COPY ${FLASH_ATTN_FILE} /tmp/flash-attn.txt
+RUN if [ -s /tmp/flash-attn.txt ]; then \
+        gosu work $CONDA_ENV_PATH/bin/pip install --no-cache-dir --no-build-isolation \
+            $(cat /tmp/flash-attn.txt); \
+    fi
 
 # Layer 5: Configuration (matplotlib, Jupyter, git, shell, ipykernel)
 RUN gosu work mkdir -p /home/work/bin
