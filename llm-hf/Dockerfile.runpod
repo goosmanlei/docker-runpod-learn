@@ -58,19 +58,23 @@ RUN gosu work wget -q \
 # To pin: ./build-push-commit.sh --pin
 COPY ${CONSTRAINTS_FILE} /tmp/constraints.txt
 
-# Layer 3: Create mamba env + install PyTorch for the target CUDA version
+# Layer 3a: Create mamba env (Python only)
 RUN gosu work $CONDA_ROOT/bin/mamba create -n llm-hf python=${PYTHON_VERSION} -y && \
-    gosu work $CONDA_ROOT/bin/mamba clean -afy && \
-    gosu work $CONDA_ENV_PATH/bin/pip install --no-cache-dir \
+    gosu work $CONDA_ROOT/bin/mamba clean -afy
+
+# Layer 3b: Install PyTorch for the target CUDA version
+RUN gosu work $CONDA_ENV_PATH/bin/pip install --no-cache-dir \
         torch torchvision torchaudio \
         --index-url ${TORCH_INDEX_URL} \
         -c /tmp/constraints.txt
 
-# Layer 4: HuggingFace LLM course packages + Claude Code CLI
+# Layer 4a: HuggingFace LLM course packages
 COPY requirements-hf.in /tmp/
 RUN gosu work $CONDA_ENV_PATH/bin/pip install --no-cache-dir \
-    -c /tmp/constraints.txt -r /tmp/requirements-hf.in && \
-    npm install -g @anthropic-ai/claude-code
+    -c /tmp/constraints.txt -r /tmp/requirements-hf.in
+
+# Layer 4b: Claude Code CLI (isolated — unrelated to pip)
+RUN npm install -g @anthropic-ai/claude-code
 
 # Layer 4.5: flash-attn (isolated — preserves Layer 3/4 cache on rebuild)
 # --no-build-isolation reuses installed torch/triton; required for pre-built wheels too.
