@@ -41,6 +41,7 @@ ENV PATH=/home/work/bin:$PATH
 ENV JUPYTERLAB_SETTINGS_DIR=/home/work/.jupyter/lab/user-settings
 ENV MPLCONFIGDIR=/home/work/.config/matplotlib
 ENV HF_HOME=/home/work/.cache/huggingface
+ENV PIP_CACHE_DIR=/home/work/.cache/pip
 
 # Layer 2: Install Miniforge3 (mamba) as work user
 RUN gosu work wget -q \
