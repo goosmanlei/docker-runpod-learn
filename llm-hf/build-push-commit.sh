@@ -13,7 +13,7 @@ IMAGE="goosmanlei/runpod-learn-hf"
 #   keeps the ~5GB torch layer cached when re-pinning other packages.
 # flash_attn_file: per-tag file containing a pre-built wheel URL (empty file = skip)
 TAGS=(
-    "cu1241:runpod/pytorch:0.7.0-cu1241-torch240-ubuntu2204:constraints-cu1241.txt:constraints-torch-cu1241.txt:flash-attn-cu1241.txt:https://download.pytorch.org/whl/cu124"
+    "cu1263:runpod/pytorch:0.7.0-cu1263-torch260-ubuntu2404:constraints-cu1263.txt:constraints-torch-cu1263.txt:flash-attn-cu1263.txt:https://download.pytorch.org/whl/cu126"
     "cu1281:runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404:constraints-cu1281.txt:constraints-torch-cu1281.txt:flash-attn-cu1281.txt:https://download.pytorch.org/whl/cu128"
 )
 
