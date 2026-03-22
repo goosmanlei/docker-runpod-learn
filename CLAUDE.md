@@ -23,13 +23,13 @@ Two tags are maintained, each corresponding to a different base image:
 docker build --platform linux/amd64 -f Dockerfile.runpod \
   --build-arg BASE_IMAGE=runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404 \
   --build-arg CONSTRAINTS_FILE=constraints-cu1281.txt \
-  -t goosmanlei/runpod-learn:cu1281 .
+  -t goosmanlei/runpod-learn-hf:cu1281 .
 
 # cu1263
 docker build --platform linux/amd64 -f Dockerfile.runpod \
   --build-arg BASE_IMAGE=runpod/pytorch:0.7.0-cu1263-torch260-ubuntu2404 \
   --build-arg CONSTRAINTS_FILE=constraints-cu1263.txt \
-  -t goosmanlei/runpod-learn:cu1263 .
+  -t goosmanlei/runpod-learn-hf:cu1263 .
 ```
 
 ## Run (macpod)
@@ -61,11 +61,11 @@ Each tag has its own constraints file (`constraints-cu1281.txt`, `constraints-cu
 
 ```bash
 # Regenerate per-tag constraints inside a running container:
-docker run --rm goosmanlei/runpod-learn:cu1281 bash -c \
-  '$VIRTUAL_ENV/bin/pip freeze --exclude-editable' > constraints-cu1281.txt
+docker run --rm goosmanlei/runpod-learn-hf:cu1281 bash -c \
+  '$CONDA_ENV_PATH/bin/pip freeze --exclude-editable' > constraints-cu1281.txt
 
-docker run --rm goosmanlei/runpod-learn:cu1263 bash -c \
-  '$VIRTUAL_ENV/bin/pip freeze --exclude-editable' > constraints-cu1263.txt
+docker run --rm goosmanlei/runpod-learn-hf:cu1263 bash -c \
+  '$CONDA_ENV_PATH/bin/pip freeze --exclude-editable' > constraints-cu1263.txt
 # Then remove lines starting with `[entrypoint]` and any `@ file:///` lines (symlinked packages)
 ```
 
