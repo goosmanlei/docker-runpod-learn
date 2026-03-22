@@ -114,6 +114,7 @@ RUN mkdir -p /var/run/sshd && \
 
 EXPOSE 22 8888
 
+COPY --chown=work:work check_env.py /home/work/check_env.py
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD $CONDA_ENV_PATH/bin/jupyter lab
