@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Fix GPU device numbering (RunPod may mount GPU as /dev/nvidia1 instead of /dev/nvidia0)
-/fix-nvidia-dev-on-runpod.sh || true
-
 # Fix /workspace ownership so work user can write to it
 chown work:work /workspace 2>/dev/null || true
 

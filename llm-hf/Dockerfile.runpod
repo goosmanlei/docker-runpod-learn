@@ -114,7 +114,6 @@ RUN mkdir -p /var/run/sshd && \
 
 EXPOSE 22 8888
 
-COPY --chmod=755 fix-nvidia-dev-on-runpod.sh /fix-nvidia-dev-on-runpod.sh
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 CMD $CONDA_ENV_PATH/bin/jupyter lab
