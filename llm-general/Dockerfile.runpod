@@ -1,0 +1,96 @@
+ARG BASE_IMAGE=runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404
+FROM ${BASE_IMAGE}
+
+ARG CONSTRAINTS_FILE=constraints-cu1281.txt
+ARG TORCH_CONSTRAINTS_FILE=constraints-torch-cu1281.txt
+ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cu128
+ARG PYTHON_VERSION=3.11
+ARG GIT_USER_NAME=
+ARG GIT_USER_EMAIL=
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=all
+
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y --no-install-recommends \
+        git openssh-client openssh-server graphviz vim curl wget fonts-noto-cjk \
+        ffmpeg gosu sudo tmux \
+        locales nodejs && \
+    locale-gen en_US.UTF-8 && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends nvtop btop && \
+    rm -rf /var/lib/apt/lists/* && \
+    printf 'LANG=en_US.UTF-8\nLC_ALL=en_US.UTF-8\nMAMBA_ROOT_PREFIX=/home/work/miniforge3\n' >> /etc/environment
+
+RUN useradd -m -s /bin/bash work && \
+    echo "work ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+ENV CONDA_ROOT=/home/work/miniforge3
+ENV MAMBA_ROOT_PREFIX=/home/work/miniforge3
+ENV CONDA_ENV_PATH=/home/work/miniforge3/envs/llm-general
+ENV PATH=/home/work/bin:$PATH
+ENV JUPYTERLAB_SETTINGS_DIR=/home/work/.jupyter/lab/user-settings
+ENV MPLCONFIGDIR=/home/work/.config/matplotlib
+ENV HF_HOME=/home/work/.cache/huggingface
+ENV PIP_CACHE_DIR=/home/work/.cache/pip
+
+RUN gosu work wget -q \
+        https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh \
+        -O /tmp/miniforge.sh && \
+    gosu work bash /tmp/miniforge.sh -b -p "$CONDA_ROOT" && \
+    rm /tmp/miniforge.sh && \
+    gosu work "$CONDA_ROOT/bin/mamba" clean -afy
+
+RUN gosu work "$CONDA_ROOT/bin/mamba" create -n llm-general python=${PYTHON_VERSION} -y && \
+    gosu work "$CONDA_ROOT/bin/mamba" clean -afy
+
+COPY ${TORCH_CONSTRAINTS_FILE} /tmp/constraints-torch.txt
+RUN gosu work "$CONDA_ENV_PATH/bin/pip" install --no-cache-dir \
+        torch torchvision torchaudio \
+        --index-url ${TORCH_INDEX_URL} \
+        -c /tmp/constraints-torch.txt
+
+COPY ${CONSTRAINTS_FILE} /tmp/constraints.txt
+COPY requirements-general.in /tmp/
+RUN gosu work "$CONDA_ENV_PATH/bin/pip" install --no-cache-dir \
+    -c /tmp/constraints.txt -r /tmp/requirements-general.in
+
+RUN gosu work mkdir -p /home/work/bin
+COPY --chown=work:work --chmod=755 t /home/work/bin/t
+COPY --chown=work:work .tmux.conf /home/work/.tmux.conf
+COPY --chown=work:work .vimrc /home/work/.vimrc
+COPY configure.sh /configure.sh
+RUN chmod +x /configure.sh && \
+    git config --system alias.co checkout && \
+    git config --system alias.br branch && \
+    git config --system alias.ci commit && \
+    git config --system alias.st status && \
+    if [ -n "$GIT_USER_NAME" ]; then git config --system user.name "$GIT_USER_NAME"; fi && \
+    if [ -n "$GIT_USER_EMAIL" ]; then git config --system user.email "$GIT_USER_EMAIL"; fi && \
+    printf 'source %s/etc/profile.d/mamba.sh\nmamba activate llm-general\n[ -f /home/work/.env_runpod ] && source /home/work/.env_runpod\n' "$CONDA_ROOT" >> /etc/bash.bashrc && \
+    gosu work /configure.sh && \
+    rm /configure.sh
+
+RUN mkdir -p /var/run/sshd && \
+    sed -i 's/#Port 22/Port 22/' /etc/ssh/sshd_config && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
+    sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
+    sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
+    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's@#AuthorizedKeysFile.*@AuthorizedKeysFile .ssh/authorized_keys@' /etc/ssh/sshd_config
+
+EXPOSE 22 8888 8000
+
+COPY --chown=work:work check_env.py /home/work/check_env.py
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+CMD $CONDA_ENV_PATH/bin/jupyter lab

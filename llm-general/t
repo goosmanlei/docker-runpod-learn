@@ -1,0 +1,197 @@
+#!/bin/bash
+tmux_bin=tmux
+
+# 命令行参数和选项解析
+CURR_IDX=1
+CMD_ARGC=0
+while [ ${CURR_IDX} -le $# ]
+do
+	case ${!CURR_IDX} in
+		-u )
+			TMP_ARGV_IDX=$(( $CURR_IDX + 1 ))
+			OPT_USER_NAME=${!TMP_ARGV_IDX}
+			shift ; shift
+		;;
+		-s )
+			TMP_ARGV_IDX=$(( $CURR_IDX + 1 ))
+			OPT_SESS_NAME=${!TMP_ARGV_IDX}
+			shift ; shift
+		;;
+		* )
+			CMD_ARGV[${CURR_IDX}]=${!CURR_IDX}
+			CMD_ARGC=$(( $CMD_ARGC + 1 ))
+			CURR_IDX=$(( $CURR_IDX + 1 ))
+		;;
+	esac
+done
+
+# 登陆主机后切换到指定用户
+USER_NAME=${OPT_USER_NAME:-leiguoguo}
+# tmux会话名称
+SESS_NAME=${OPT_SESS_NAME}
+# 登陆到指定机器的命令
+LOGIN_TO_COMMAND="gogogo HOSTNAME ${USER_NAME}"
+
+# 新打开或附加到一个tmux会话上
+# ARG1: 有几个窗口
+# ARG2: 可选; 会话名称
+# ARG3...: 每个窗口中要执行的命令
+function new_or_attach(){
+    $tmux_bin attach-session -t "${SESS_NAME:-$2}" >/dev/null 2>/dev/null
+    if [ $? != 0 ] ;
+    then
+        func="$1"
+        $func "${SESS_NAME:-$2}" "$3" "$4" "$5" "$6" "$7" "$8" "$9" "${10}" "${11}" "${12}" "${13}"
+        $tmux_bin -2 attach-session -d
+    fi
+}
+
+# 拆分左主右从共1个工作区
+function split_1_pane() {
+    $tmux_bin new-session -s "$1" -d "$2"
+}
+
+# 拆分左主右从共2个工作区
+function split_2_pane_v() {
+    $tmux_bin new-session -s "$1" -d "$2"
+    $tmux_bin split-window -t "$1" -v -l 40% "$3"
+    $tmux_bin select-pane -t "$1" -U
+}
+
+# 拆分左主右从共2个工作区
+function split_2_pane() {
+    $tmux_bin new-session -s "$1" -d "$2"
+    $tmux_bin split-window -t "$1" -h -l 40% "$3"
+    $tmux_bin select-pane -t "$1" -L
+}
+
+# 拆分左主右从共3个工作区
+function split_3_pane() {
+    $tmux_bin new-session -s "$1" -d "$2"
+    $tmux_bin split-window -t "$1" -h -l 40% "$3"
+    $tmux_bin split-window -t "$1" -v -l 50% "$4"
+    $tmux_bin select-pane -t "$1" -L
+}
+
+# 拆分为4个同步窗口
+# split_4_pane <标识符> <命令1> <命令2> <命令3> <命令4>
+function split_4_pane() {
+    $tmux_bin new-session -s "$1" -d "$2"
+    $tmux_bin split-window -t "$1" -h -l 40% "$3"
+    $tmux_bin split-window -t "$1" -v -l 67% "$4"
+    $tmux_bin split-window -t "$1" -v -l 50% "$5"
+    $tmux_bin select-pane -t "$1" -L
+}
+
+# 拆分5个工作区
+function split_5_pane() {
+    $tmux_bin new-session -s "$1" -d "$2"
+    $tmux_bin split-window -t "$1" -h -l 40% "$4"
+    $tmux_bin split-window -t "$1" -v -l 67% "$5"
+    $tmux_bin split-window -t "$1" -v -l 50% "$6"
+    $tmux_bin select-pane -t "$1" -L
+    $tmux_bin split-window -t "$1" -v -l 30% "$3"
+    $tmux_bin select-pane -t "$1" -U
+}
+
+
+# 拆分6个工作区
+function split_6_pane() {
+    $tmux_bin new-session -s "$1" -d "$2"
+    $tmux_bin split-window -t "$1" -h -l 40% "$4"
+    $tmux_bin split-window -t "$1" -v -l 75% "$5"
+    $tmux_bin split-window -t "$1" -v -l 67% "$6"
+    $tmux_bin split-window -t "$1" -v -l 50% "$7"
+    $tmux_bin select-pane -t "$1" -L
+    $tmux_bin split-window -t "$1" -v -l 30% "$3"
+    $tmux_bin select-pane -t "$1" -U
+}
+
+# 拆分7个工作区
+function split_7_pane() {
+    $tmux_bin new-session -s "$1" -d "$2"
+    $tmux_bin split-window -t "$1" -h -l 40% "$5"
+    $tmux_bin split-window -t "$1" -v -l 75% "$6"
+    $tmux_bin split-window -t "$1" -v -l 67% "$7"
+    $tmux_bin split-window -t "$1" -v -l 50% "$8"
+    $tmux_bin select-pane -t "$1" -L
+    $tmux_bin split-window -t "$1" -v -l 40% "$3"
+    $tmux_bin split-window -t "$1" -v -l 50% "$4"
+    $tmux_bin select-pane -t "$1" -U
+    $tmux_bin select-pane -t "$1" -U
+}
+
+# 拆分8个工作区
+function split_8_pane() {
+    $tmux_bin new-session -s "$1" -d "$2"
+    $tmux_bin split-window -t "$1" -h -l 40% "$5"
+    $tmux_bin split-window -t "$1" -v -l 80% "$6"
+    $tmux_bin split-window -t "$1" -v -l 75% "$7"
+    $tmux_bin split-window -t "$1" -v -l 67% "$8"
+    $tmux_bin split-window -t "$1" -v -l 50% "$9"
+    $tmux_bin select-pane -t "$1" -L
+    $tmux_bin split-window -t "$1" -v -l 50% "$3"
+    $tmux_bin split-window -t "$1" -v -l 50% "$4"
+    $tmux_bin select-pane -t "$1" -U
+    $tmux_bin select-pane -t "$1" -U
+}
+
+
+# 拆分9个工作区
+function split_9_pane() {
+    $tmux_bin new-session -s "$1" -d "$2"
+    $tmux_bin split-window -t "$1" -h -l 40% "$5"
+    $tmux_bin split-window -t "$1" -v -l 84% "$6"
+    $tmux_bin split-window -t "$1" -v -l 80% "$7"
+    $tmux_bin split-window -t "$1" -v -l 75% "$8"
+    $tmux_bin split-window -t "$1" -v -l 67% "$9"
+    $tmux_bin split-window -t "$1" -v -l 50% "${10}"
+    $tmux_bin select-pane -t "$1" -L
+    $tmux_bin split-window -t "$1" -v -l 50% "$3"
+    $tmux_bin split-window -t "$1" -v -l 50% "$4"
+    $tmux_bin select-pane -t "$1" -U
+    $tmux_bin select-pane -t "$1" -U
+}
+
+
+# 拆分10个工作区
+function split_10_pane() {
+    $tmux_bin new-session -s "$1" -d "$2"
+    $tmux_bin split-window -t "$1" -h -l 40% "$6"
+    $tmux_bin split-window -t "$1" -v -l 84% "$7"
+    $tmux_bin split-window -t "$1" -v -l 80% "$8"
+    $tmux_bin split-window -t "$1" -v -l 75% "$9"
+    $tmux_bin split-window -t "$1" -v -l 67% "${10}"
+    $tmux_bin split-window -t "$1" -v -l 50% "${11}"
+    $tmux_bin select-pane -t "$1" -L
+    $tmux_bin split-window -t "$1" -v -l 60% "$3"
+    $tmux_bin split-window -t "$1" -v -l 67% "$4"
+    $tmux_bin split-window -t "$1" -v -l 50% "$5"
+    $tmux_bin select-pane -t "$1" -U
+    $tmux_bin select-pane -t "$1" -U
+    $tmux_bin select-pane -t "$1" -U
+}
+
+case ${CMD_ARGV[1]} in
+    h ) # 帮助
+        #SCRIPT_DIR=$( cd "$( dirname ${BASH_SOURCE[0]} )" && pwd )
+        grep -o "^\s*[0-9a-zA-Z_]\+ ).*$" ${BASH_SOURCE[0]}
+    ;;
+    l ) # 列出当前会话
+        $tmux_bin list-sessions
+    ;;
+    d ) # 删除会话
+        $tmux_bin kill-session -t ${CMD_ARGV[2]}
+    ;;
+    n ) # 新建会话
+        $tmux_bin new-session -A -s ${CMD_ARGV[2]}
+    ;;
+    m ) # monitor
+        new_or_attach split_2_pane_v monitor btop nvtop
+    ;;
+    * )
+        $tmux_bin $@
+    ;;
+esac
+
+

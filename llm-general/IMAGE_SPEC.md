@@ -12,21 +12,19 @@
 - [6. Python 环境](#6-python-环境)
 - [7. 环境变量](#7-环境变量)
 - [8. Python 依赖](#8-python-依赖)
-- [9. Optional: flash-attn](#9-optional-flash-attn)
-- [10. JupyterLab](#10-jupyterlab)
-- [11. SSH](#11-ssh)
-- [12. Notebook 与中文绘图](#12-notebook-与中文绘图)
-- [13. Shell、编辑器与 Git](#13-shell编辑器与-git)
-- [14. Optional: 启动时拉取项目](#14-optional-启动时拉取项目)
-- [15. Optional: Claude Code CLI](#15-optional-claude-code-cli)
-- [16. 端口](#16-端口)
-- [17. Dockerfile 构建参数](#17-dockerfile-构建参数)
-- [18. 文件清单](#18-文件清单)
-- [19. 构建、Pin 与发布](#19-构建pin-与发布)
-- [20. 环境检查](#20-环境检查)
-- [21. RunPod 使用方式](#21-runpod-使用方式)
-- [22. Review Checklist](#22-review-checklist)
-- [23. 待决策项](#23-待决策项)
+- [9. JupyterLab](#9-jupyterlab)
+- [10. SSH](#10-ssh)
+- [11. Notebook 与中文绘图](#11-notebook-与中文绘图)
+- [12. Shell、编辑器与 Git](#12-shell编辑器与-git)
+- [13. Optional: 启动时拉取项目](#13-optional-启动时拉取项目)
+- [14. 端口](#14-端口)
+- [15. Dockerfile 构建参数](#15-dockerfile-构建参数)
+- [16. 文件清单](#16-文件清单)
+- [17. 构建、Pin 与发布](#17-构建pin-与发布)
+- [18. 环境检查](#18-环境检查)
+- [19. RunPod 使用方式](#19-runpod-使用方式)
+- [20. Review Checklist](#20-review-checklist)
+- [21. 待决策项](#21-待决策项)
 
 ## 1. 镜像定位
 
@@ -39,7 +37,7 @@
 - 预装常见 LLM、HuggingFace、Notebook、数据处理、可视化、Gradio 和测试工具。
 - 支持通过 RunPod Secrets 注入 GitHub、HuggingFace、SSH 公钥等敏感配置。
 - 保持镜像可复现：Python 依赖使用 constraints 文件冻结。
-- 保持构建缓存友好：PyTorch、普通 Python 依赖、可选高成本依赖分层安装。
+- 保持构建缓存友好：PyTorch 与普通 Python 依赖分层安装。
 
 明确不做：
 
@@ -117,7 +115,7 @@ RunPod 常见挂载目录：
 chown work:work /workspace 2>/dev/null || true
 ```
 
-`work` 用户可以保留密码登录能力，但密码不应长期硬编码。当前可先使用固定默认密码作为过渡；后续建议改为环境变量或只使用 SSH key。
+`work` 用户不设置固定 SSH 密码。远程登录默认依赖 RunPod Secret 注入的 SSH public key。
 
 ## 5. 系统工具
 
@@ -268,37 +266,10 @@ black
 1. 创建 mamba 环境，只包含 Python。
 2. 使用 `constraints-torch-<tag>.txt` 安装 `torch torchvision torchaudio`。
 3. 使用 `constraints-<tag>.txt` 安装 `requirements-general.in`。
-4. 可选安装 `flash-attn`。
-5. 单独安装 Node/npm 工具，避免影响 Python 层缓存。
 
 PyTorch 单独分层的原因：PyTorch 层体积很大，普通依赖调整不应导致 PyTorch 重装。
 
-## 9. Optional: flash-attn
-
-按 CUDA tag 提供 flash-attn 配置文件：
-
-```text
-flash-attn-cu1281.txt
-flash-attn-cu1263.txt
-```
-
-规则：
-
-- 文件为空表示跳过安装。
-- 文件非空时，内容应为可直接传给 pip 的 wheel URL 或包 spec。
-- 安装命令使用 `--no-build-isolation`。
-
-示例：
-
-```bash
-if [ -s /tmp/flash-attn.txt ]; then
-    pip install --no-cache-dir --no-build-isolation $(cat /tmp/flash-attn.txt)
-fi
-```
-
-`check_env.py` 中 flash-attn 检查允许失败，但必须输出清晰结果。
-
-## 10. JupyterLab
+## 9. JupyterLab
 
 容器默认命令：
 
@@ -320,7 +291,7 @@ c.ServerApp.root_dir = '/home/work'
 
 说明：该配置面向 RunPod 受控环境。若容器直接暴露到公网，应重新启用 token 或其他访问控制。
 
-## 11. SSH
+## 10. SSH
 
 暴露端口：
 
@@ -333,7 +304,7 @@ sshd 配置要求：
 ```text
 Port 22
 PermitRootLogin no
-PasswordAuthentication yes
+PasswordAuthentication no
 PubkeyAuthentication yes
 AuthorizedKeysFile .ssh/authorized_keys
 ```
@@ -362,7 +333,7 @@ if [ -n "$LEIGUOGUO_MBP_M5_RSA_PUB" ]; then
 fi
 ```
 
-## 12. Notebook 与中文绘图
+## 11. Notebook 与中文绘图
 
 安装中文字体：
 
@@ -385,7 +356,7 @@ axes.unicode_minus : False
 
 构建时预热 matplotlib font cache。
 
-## 13. Shell、编辑器与 Git
+## 12. Shell、编辑器与 Git
 
 复制到用户目录：
 
@@ -420,7 +391,7 @@ git config --system user.name "$GIT_USER_NAME"
 git config --system user.email "$GIT_USER_EMAIL"
 ```
 
-## 14. Optional: 启动时拉取项目
+## 13. Optional: 启动时拉取项目
 
 默认不 clone 任何仓库。
 
@@ -440,19 +411,7 @@ STARTUP_GIT_DIR
 - 对 GitHub HTTPS 私有仓库，可使用 `GITHUB_PERSONAL_ACCESS_TOKEN` 生成 clone URL。
 - clone/pull 失败不应阻止容器启动，但需要打印清晰日志。
 
-## 15. Optional: Claude Code CLI
-
-可以安装 Claude Code CLI：
-
-```bash
-npm install -g @anthropic-ai/claude-code
-```
-
-该安装必须单独成层，避免 npm 工具变化影响 Python 依赖层缓存。
-
-是否保留该工具取决于镜像用途：个人学习镜像可以保留；纯运行测试镜像可以移除。
-
-## 16. 端口
+## 14. 端口
 
 必须暴露：
 
@@ -464,16 +423,14 @@ npm install -g @anthropic-ai/claude-code
 建议额外暴露：
 
 ```text
-7860
 8000
 ```
 
 用途：
 
-- `7860`: Gradio
 - `8000`: FastAPI/uvicorn 或其他临时测试服务
 
-## 17. Dockerfile 构建参数
+## 15. Dockerfile 构建参数
 
 `Dockerfile.runpod` 应支持：
 
@@ -483,7 +440,6 @@ CONSTRAINTS_FILE
 TORCH_CONSTRAINTS_FILE
 TORCH_INDEX_URL
 PYTHON_VERSION
-FLASH_ATTN_FILE
 GIT_USER_NAME
 GIT_USER_EMAIL
 ```
@@ -496,12 +452,11 @@ CONSTRAINTS_FILE=constraints-cu1281.txt
 TORCH_CONSTRAINTS_FILE=constraints-torch-cu1281.txt
 TORCH_INDEX_URL=https://download.pytorch.org/whl/cu128
 PYTHON_VERSION=3.11
-FLASH_ATTN_FILE=flash-attn-cu1281.txt
 GIT_USER_NAME=
 GIT_USER_EMAIL=
 ```
 
-## 18. 文件清单
+## 16. 文件清单
 
 镜像目录应包含：
 
@@ -509,6 +464,7 @@ GIT_USER_EMAIL=
 llm-general/
   IMAGE_SPEC.md
   Dockerfile.runpod
+  .dockerignore
   entrypoint.sh
   configure.sh
   check_env.py
@@ -517,15 +473,13 @@ llm-general/
   constraints-cu1263.txt
   constraints-torch-cu1281.txt
   constraints-torch-cu1263.txt
-  flash-attn-cu1281.txt
-  flash-attn-cu1263.txt
   build-push-commit.sh
   .tmux.conf
   .vimrc
   t
 ```
 
-## 19. 构建、Pin 与发布
+## 17. 构建、Pin 与发布
 
 `build-push-commit.sh` 应支持：
 
@@ -548,7 +502,7 @@ goosmanlei/runpod-learn-general:cu1281
 goosmanlei/runpod-learn-general:cu1263
 ```
 
-## 20. 环境检查
+## 18. 环境检查
 
 `check_env.py` 应检查：
 
@@ -559,7 +513,6 @@ goosmanlei/runpod-learn-general:cu1263
 - cuDNN version
 - GPU 数量、名称、显存
 - 一个简单 CUDA matmul
-- flash-attn import 和 forward pass，允许失败但输出清晰
 - `bitsandbytes`
 - `triton`
 - 常见库版本：
@@ -588,7 +541,7 @@ goosmanlei/runpod-learn-general:cu1263
 python /home/work/check_env.py
 ```
 
-## 21. RunPod 使用方式
+## 19. RunPod 使用方式
 
 启动后默认服务：
 
@@ -603,7 +556,7 @@ python /home/work/check_env.py
 - Pod 暴露或映射 SSH 端口。
 - 容器启动脚本已写入 `/home/work/.ssh/authorized_keys`。
 
-## 22. Review Checklist
+## 20. Review Checklist
 
 根据本文档生成或修改镜像文件时，检查：
 
@@ -614,19 +567,14 @@ python /home/work/check_env.py
 - PyTorch 只在 torch constraints 层安装。
 - 普通 Python 依赖来自 `requirements-general.in`。
 - constraints 文件与目标 CUDA tag 匹配。
-- flash-attn 是可选安装，文件为空时跳过。
 - `entrypoint.sh` 不强制 clone 任何仓库。
 - `LEIGUOGUO_MBP_M5_RSA_PUB` 只从运行时环境变量读取。
 - `/home/work/.env_runpod` 权限为 `600`。
 - `/home/work/.ssh` 权限为 `700`，`authorized_keys` 权限为 `600`。
 - JupyterLab 监听 `0.0.0.0:8888`。
-- SSH 启动，root login 关闭。
-- `check_env.py` 在没有 flash-attn 时仍能继续运行。
+- SSH 启动，root login 关闭，password authentication 关闭。
 
-## 23. 待决策项
+## 21. 待决策项
 
-- 是否保留 Claude Code CLI。
-- 是否保留固定 SSH 密码，还是改为环境变量或完全依赖密钥。
-- 是否默认暴露 `7860` 和 `8000`。
 - 是否保留个人 `.tmux.conf`、`.vimrc`、`t` 脚本。
 - 是否实现可选的 `STARTUP_GIT_REPO` clone/pull 机制。
