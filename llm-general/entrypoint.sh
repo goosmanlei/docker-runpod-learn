@@ -26,15 +26,19 @@ chmod 600 /home/work/.env_runpod
 
 if [ -n "$STARTUP_GIT_REPO" ]; then
     STARTUP_GIT_DIR=${STARTUP_GIT_DIR:-/home/work/project}
+    CLONE_URL=${STARTUP_GIT_REPO%/}
     GIT_AUTH_ARGS=()
-    if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ] && [[ "$STARTUP_GIT_REPO" == https://github.com/* ]]; then
+    if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ] && [[ "$CLONE_URL" == https://github.com/* ]]; then
+        echo "[entrypoint] Using GITHUB_PERSONAL_ACCESS_TOKEN for GitHub clone/pull."
         GITHUB_AUTH_HEADER=$(printf 'x-access-token:%s' "$GITHUB_PERSONAL_ACCESS_TOKEN" | base64 -w 0)
         GIT_AUTH_ARGS=(-c "http.https://github.com/.extraheader=AUTHORIZATION: Basic ${GITHUB_AUTH_HEADER}")
+    elif [[ "$CLONE_URL" == https://github.com/* ]]; then
+        echo "[entrypoint] GITHUB_PERSONAL_ACCESS_TOKEN is not set; GitHub clone/pull will be anonymous."
     fi
 
     if [ ! -d "$STARTUP_GIT_DIR/.git" ]; then
-        echo "[entrypoint] Cloning STARTUP_GIT_REPO into $STARTUP_GIT_DIR..."
-        if ! gosu work git "${GIT_AUTH_ARGS[@]}" clone "$STARTUP_GIT_REPO" "$STARTUP_GIT_DIR"; then
+        echo "[entrypoint] Cloning $CLONE_URL into $STARTUP_GIT_DIR..."
+        if ! gosu work git "${GIT_AUTH_ARGS[@]}" clone "$CLONE_URL" "$STARTUP_GIT_DIR"; then
             echo "[entrypoint] Failed to clone STARTUP_GIT_REPO into $STARTUP_GIT_DIR." >&2
         fi
     else

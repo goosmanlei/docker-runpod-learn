@@ -80,6 +80,10 @@ RUN chmod +x /configure.sh && \
     gosu work /configure.sh && \
     rm /configure.sh
 
+RUN rm -f \
+    /usr/local/etc/jupyter/jupyter_server_config.d/jupyter-archive.json \
+    /usr/local/etc/jupyter/jupyter_server_config.d/notebook.json
+
 RUN mkdir -p /var/run/sshd && \
     sed -i 's/#Port 22/Port 22/' /etc/ssh/sshd_config && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin no/' /etc/ssh/sshd_config && \
