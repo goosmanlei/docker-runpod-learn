@@ -40,6 +40,8 @@ ENV JUPYTERLAB_SETTINGS_DIR=/home/work/.jupyter/lab/user-settings
 ENV MPLCONFIGDIR=/home/work/.config/matplotlib
 ENV HF_HOME=/home/work/.cache/huggingface
 ENV PIP_CACHE_DIR=/home/work/.cache/pip
+ENV STARTUP_GIT_REPO=https://github.com/goosman/aigc-sprint.git
+ENV STARTUP_GIT_DIR=/home/work/aigc-sprint
 WORKDIR /home/work
 
 RUN gosu work wget -q \

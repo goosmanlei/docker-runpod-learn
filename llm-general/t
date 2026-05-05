@@ -190,7 +190,7 @@ case ${CMD_ARGV[1]} in
         Session_name="monitor"
         $tmux_bin attach-session -t ${Session_name} >/dev/null 2>/dev/null
         if [ $? != 0 ]; then
-            WORK_PATH="$HOME"
+            WORK_PATH="$HOME/aigc-sprint"
 
             Window_name="monitor"
             $tmux_bin new-session -s ${Session_name} -n ${Window_name} -c "$WORK_PATH" -d
