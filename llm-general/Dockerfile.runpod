@@ -103,4 +103,4 @@ EXPOSE 22 8888 8000
 COPY --chown=work:work check_env.py /home/work/check_env.py
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/home/work/miniforge3/envs/llm-general/bin/jupyter", "lab"]
+CMD ["/home/work/miniforge3/envs/llm-general/bin/jupyter", "lab", "--no-browser"]

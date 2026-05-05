@@ -20,6 +20,8 @@ c.ServerApp.allow_origin = '*'
 c.ServerApp.allow_remote_access = True
 c.ServerApp.disable_check_xsrf = True
 c.ServerApp.root_dir = '/home/work'
+c.ServerApp.open_browser = False
+c.LabApp.open_browser = False
 EOF
 
 cat > /home/work/.jupyter/lab/user-settings/@jupyterlab/shortcuts-extension/shortcuts.jupyterlab-settings << 'EOF'
