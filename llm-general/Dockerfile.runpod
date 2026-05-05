@@ -1,7 +1,6 @@
 ARG BASE_IMAGE=runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404
 FROM ${BASE_IMAGE}
 
-ARG CONSTRAINTS_FILE=constraints-cu1281.txt
 ARG TORCH_CONSTRAINTS_FILE=constraints-torch-cu1281.txt
 ARG TORCH_INDEX_URL=https://download.pytorch.org/whl/cu128
 ARG PYTHON_VERSION=3.11
@@ -59,10 +58,9 @@ RUN gosu work "$CONDA_ENV_PATH/bin/pip" install --no-cache-dir \
         --index-url ${TORCH_INDEX_URL} \
         -c /tmp/constraints-torch.txt
 
-COPY ${CONSTRAINTS_FILE} /tmp/constraints.txt
 COPY requirements-general.in /tmp/
 RUN gosu work "$CONDA_ENV_PATH/bin/pip" install --no-cache-dir \
-    -c /tmp/constraints.txt -r /tmp/requirements-general.in
+    -r /tmp/requirements-general.in
 
 RUN gosu work mkdir -p /home/work/bin
 COPY --chown=work:work --chmod=755 t /home/work/bin/t

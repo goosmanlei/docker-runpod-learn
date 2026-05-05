@@ -18,6 +18,8 @@ numpy
 pandas
 matplotlib
 seaborn
+imageio
+imageio-ffmpeg
 scikit-learn
 scipy
 plotly

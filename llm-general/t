@@ -186,8 +186,24 @@ case ${CMD_ARGV[1]} in
     n ) # 新建会话
         $tmux_bin new-session -A -s ${CMD_ARGV[2]}
     ;;
-    m ) # monitor
-        new_or_attach split_2_pane_v monitor btop nvtop
+    m )
+        Session_name="monitor"
+        $tmux_bin attach-session -t ${Session_name} >/dev/null 2>/dev/null
+        if [ $? != 0 ]; then
+            WORK_PATH="$HOME"
+
+            Window_name="monitor"
+            $tmux_bin new-session -s ${Session_name} -n ${Window_name} -c "$WORK_PATH" -d
+            $tmux_bin split-window -t "${Session_name}:${Window_name}.0" -v -c "$WORK_PATH"
+            $tmux_bin split-window -t "${Session_name}:${Window_name}.1" -h -c "$WORK_PATH"
+            $tmux_bin split-window -t "${Session_name}:${Window_name}.0" -h -c "$WORK_PATH"
+
+            $tmux_bin send-keys -t "${Session_name}:${Window_name}.1" "btop" Enter
+            $tmux_bin send-keys -t "${Session_name}:${Window_name}.3" "nvtop" Enter
+            $tmux_bin select-pane -t "${Session_name}:${Window_name}.0"
+
+            $tmux_bin -2 attach-session -d -t ${Session_name}
+        fi
     ;;
     * )
         $tmux_bin $@
