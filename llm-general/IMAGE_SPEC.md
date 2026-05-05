@@ -189,7 +189,7 @@ NVIDIA_DRIVER_CAPABILITIES=all
 CONDA_ROOT=/home/work/miniforge3
 MAMBA_ROOT_PREFIX=/home/work/miniforge3
 CONDA_ENV_PATH=/home/work/miniforge3/envs/llm-general
-PATH=/home/work/bin:$PATH
+PATH=/home/work/miniforge3/envs/llm-general/bin:/home/work/bin:$PATH
 JUPYTERLAB_SETTINGS_DIR=/home/work/.jupyter/lab/user-settings
 MPLCONFIGDIR=/home/work/.config/matplotlib
 HF_HOME=/home/work/.cache/huggingface
@@ -485,8 +485,9 @@ llm-general/
 
 1. 构建所有 tags。
 2. `--pin` 模式：运行镜像并执行 `pip freeze --exclude-editable`，写回对应 constraints 文件；该模式不 push、不 commit。
-3. 普通模式：build 后 push 到 Docker Hub。
-4. 如果 git 有变化，可以生成 commit message、commit、push。
+3. `--build-only` 模式：只构建所有 tags，不 push、不 commit。
+4. 普通模式：build 后 push 到 Docker Hub。
+5. 如果 git 有变化，可以生成 commit message、commit、push。
 
 `--pin` 输出需要过滤：
 

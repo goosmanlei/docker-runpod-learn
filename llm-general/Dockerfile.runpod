@@ -41,6 +41,7 @@ ENV JUPYTERLAB_SETTINGS_DIR=/home/work/.jupyter/lab/user-settings
 ENV MPLCONFIGDIR=/home/work/.config/matplotlib
 ENV HF_HOME=/home/work/.cache/huggingface
 ENV PIP_CACHE_DIR=/home/work/.cache/pip
+WORKDIR /home/work
 
 RUN gosu work wget -q \
         https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh \
@@ -88,9 +89,11 @@ RUN mkdir -p /var/run/sshd && \
     sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
     sed -i 's@#AuthorizedKeysFile.*@AuthorizedKeysFile .ssh/authorized_keys@' /etc/ssh/sshd_config
 
+ENV PATH=/home/work/miniforge3/envs/llm-general/bin:/home/work/bin:$PATH
+
 EXPOSE 22 8888 8000
 
 COPY --chown=work:work check_env.py /home/work/check_env.py
 COPY --chmod=755 entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
-CMD $CONDA_ENV_PATH/bin/jupyter lab
+CMD ["/home/work/miniforge3/envs/llm-general/bin/jupyter", "lab"]
