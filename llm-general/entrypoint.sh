@@ -26,21 +26,22 @@ chmod 600 /home/work/.env_runpod
 
 if [ -n "$STARTUP_GIT_REPO" ]; then
     STARTUP_GIT_DIR=${STARTUP_GIT_DIR:-/home/work/project}
-    CLONE_URL=$STARTUP_GIT_REPO
-    if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ]; then
-        case "$STARTUP_GIT_REPO" in
-            https://github.com/*)
-                CLONE_URL="https://${GITHUB_PERSONAL_ACCESS_TOKEN}@${STARTUP_GIT_REPO#https://}"
-                ;;
-        esac
+    GIT_AUTH_ARGS=()
+    if [ -n "$GITHUB_PERSONAL_ACCESS_TOKEN" ] && [[ "$STARTUP_GIT_REPO" == https://github.com/* ]]; then
+        GITHUB_AUTH_HEADER=$(printf 'x-access-token:%s' "$GITHUB_PERSONAL_ACCESS_TOKEN" | base64 -w 0)
+        GIT_AUTH_ARGS=(-c "http.https://github.com/.extraheader=AUTHORIZATION: Basic ${GITHUB_AUTH_HEADER}")
     fi
 
     if [ ! -d "$STARTUP_GIT_DIR/.git" ]; then
         echo "[entrypoint] Cloning STARTUP_GIT_REPO into $STARTUP_GIT_DIR..."
-        gosu work git clone "$CLONE_URL" "$STARTUP_GIT_DIR" || true
+        if ! gosu work git "${GIT_AUTH_ARGS[@]}" clone "$STARTUP_GIT_REPO" "$STARTUP_GIT_DIR"; then
+            echo "[entrypoint] Failed to clone STARTUP_GIT_REPO into $STARTUP_GIT_DIR." >&2
+        fi
     else
         echo "[entrypoint] Pulling latest in $STARTUP_GIT_DIR..."
-        gosu work git -C "$STARTUP_GIT_DIR" pull --ff-only 2>&1 || true
+        if ! gosu work git "${GIT_AUTH_ARGS[@]}" -C "$STARTUP_GIT_DIR" pull --ff-only 2>&1; then
+            echo "[entrypoint] Failed to pull latest in $STARTUP_GIT_DIR." >&2
+        fi
     fi
 fi
 
