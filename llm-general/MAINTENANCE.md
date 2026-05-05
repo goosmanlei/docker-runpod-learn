@@ -9,7 +9,7 @@ This image is a personal RunPod learning image. Keep this file short and practic
 - Keep `torch`, `torchvision`, and `torchaudio` pinned per CUDA tag through `constraints-torch-*.txt`.
 - Do not pin the general Python dependency set. Add ordinary packages to `requirements-general.in`.
 - Do not bake secrets, SSH keys, or personal tokens into the image.
-- Default runtime clone/pull is `https://github.com/goosman/aigc-sprint.git` to `/home/work/aigc-sprint`.
+- Default runtime clone/pull is `https://github.com/goosmanlei/aigc-sprint.git` to `/home/work/aigc-sprint`.
 - Keep private repository access token-based through `GITHUB_PERSONAL_ACCESS_TOKEN`; do not bake tokens into the image.
 
 ## Maintained Tags

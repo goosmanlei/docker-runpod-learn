@@ -8,8 +8,8 @@ IMAGE="goosmanlei/runpod-learn-general"
 
 # Format: tag|base_image|torch_constraints|torch_index_url
 TAGS=(
-    "cu1263|runpod/pytorch:0.7.0-cu1263-torch260-ubuntu2404|constraints-torch-cu1263.txt|https://download.pytorch.org/whl/cu126"
     "cu1281|runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404|constraints-torch-cu1281.txt|https://download.pytorch.org/whl/cu128"
+    "cu1263|runpod/pytorch:0.7.0-cu1263-torch260-ubuntu2404|constraints-torch-cu1263.txt|https://download.pytorch.org/whl/cu126"
 )
 
 BUILD_ONLY=false
@@ -39,7 +39,7 @@ for entry in "${TAGS[@]}"; do
         --build-arg TORCH_INDEX_URL="$torch_index"
         -t "$IMAGE:$tag" .
     )
-    "${docker_cmd[@]}"
+    DOCKER_BUILDKIT=1 "${docker_cmd[@]}"
 done
 
 if $BUILD_ONLY; then

@@ -36,14 +36,18 @@ if [ -n "$STARTUP_GIT_REPO" ]; then
         echo "[entrypoint] GITHUB_PERSONAL_ACCESS_TOKEN is not set; GitHub clone/pull will be anonymous."
     fi
 
+    run_git() {
+        gosu work git "${GIT_AUTH_ARGS[@]}" "$@"
+    }
+
     if [ ! -d "$STARTUP_GIT_DIR/.git" ]; then
         echo "[entrypoint] Cloning $CLONE_URL into $STARTUP_GIT_DIR..."
-        if ! gosu work git "${GIT_AUTH_ARGS[@]}" clone "$CLONE_URL" "$STARTUP_GIT_DIR"; then
+        if ! run_git clone "$CLONE_URL" "$STARTUP_GIT_DIR"; then
             echo "[entrypoint] Failed to clone STARTUP_GIT_REPO into $STARTUP_GIT_DIR." >&2
         fi
     else
         echo "[entrypoint] Pulling latest in $STARTUP_GIT_DIR..."
-        if ! gosu work git "${GIT_AUTH_ARGS[@]}" -C "$STARTUP_GIT_DIR" pull --ff-only 2>&1; then
+        if ! run_git -C "$STARTUP_GIT_DIR" pull --ff-only 2>&1; then
             echo "[entrypoint] Failed to pull latest in $STARTUP_GIT_DIR." >&2
         fi
     fi

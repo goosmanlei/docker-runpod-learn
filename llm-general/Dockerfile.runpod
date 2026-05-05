@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 ARG BASE_IMAGE=runpod/pytorch:1.0.3-cu1281-torch280-ubuntu2404
 FROM ${BASE_IMAGE}
 
@@ -40,7 +41,7 @@ ENV JUPYTERLAB_SETTINGS_DIR=/home/work/.jupyter/lab/user-settings
 ENV MPLCONFIGDIR=/home/work/.config/matplotlib
 ENV HF_HOME=/home/work/.cache/huggingface
 ENV PIP_CACHE_DIR=/home/work/.cache/pip
-ENV STARTUP_GIT_REPO=https://github.com/goosman/aigc-sprint.git
+ENV STARTUP_GIT_REPO=https://github.com/goosmanlei/aigc-sprint.git
 ENV STARTUP_GIT_DIR=/home/work/aigc-sprint
 WORKDIR /home/work
 
@@ -55,13 +56,15 @@ RUN gosu work "$CONDA_ROOT/bin/mamba" create -n llm-general python=${PYTHON_VERS
     gosu work "$CONDA_ROOT/bin/mamba" clean -afy
 
 COPY ${TORCH_CONSTRAINTS_FILE} /tmp/constraints-torch.txt
-RUN gosu work "$CONDA_ENV_PATH/bin/pip" install --no-cache-dir \
+RUN --mount=type=cache,target=/home/work/.cache/pip,mode=0777 \
+    gosu work "$CONDA_ENV_PATH/bin/pip" install \
         torch torchvision torchaudio \
         --index-url ${TORCH_INDEX_URL} \
         -c /tmp/constraints-torch.txt
 
 COPY requirements-general.in /tmp/
-RUN gosu work "$CONDA_ENV_PATH/bin/pip" install --no-cache-dir \
+RUN --mount=type=cache,target=/home/work/.cache/pip,mode=0777 \
+    gosu work "$CONDA_ENV_PATH/bin/pip" install \
     -r /tmp/requirements-general.in
 
 RUN gosu work mkdir -p /home/work/bin
