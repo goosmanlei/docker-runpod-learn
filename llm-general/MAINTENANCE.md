@@ -11,7 +11,7 @@ This image is a personal RunPod learning image. Keep this file short and practic
 - Do not bake secrets, SSH keys, or personal tokens into the image.
 - Default runtime clone/pull is `https://github.com/goosmanlei/aigc-sprint.git` to `/home/work/aigc-sprint`.
 - Keep private repository access token-based through `GITHUB_PERSONAL_ACCESS_TOKEN`; do not bake tokens into the image or remote URL.
-- At runtime, `entrypoint.sh` stores the GitHub auth header in the startup repo's local Git config so manual `git pull` works inside the container.
+- At runtime, `entrypoint.sh` stores GitHub auth in `/home/work/.git-credentials` so manual `git pull` works inside the container.
 
 ## Maintained Tags
 
