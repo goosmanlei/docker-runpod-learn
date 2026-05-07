@@ -40,12 +40,29 @@ if [ -n "$STARTUP_GIT_REPO" ]; then
         gosu work git "${GIT_AUTH_ARGS[@]}" "$@"
     }
 
+    configure_repo_git_auth() {
+        if [ ! -d "$STARTUP_GIT_DIR/.git" ]; then
+            return
+        fi
+
+        if [ -n "$GITHUB_AUTH_HEADER" ]; then
+            gosu work git -C "$STARTUP_GIT_DIR" config \
+                --local http.https://github.com/.extraheader \
+                "AUTHORIZATION: Basic ${GITHUB_AUTH_HEADER}"
+        else
+            gosu work git -C "$STARTUP_GIT_DIR" config \
+                --local --unset-all http.https://github.com/.extraheader 2>/dev/null || true
+        fi
+    }
+
     if [ ! -d "$STARTUP_GIT_DIR/.git" ]; then
         echo "[entrypoint] Cloning $CLONE_URL into $STARTUP_GIT_DIR..."
         if ! run_git clone "$CLONE_URL" "$STARTUP_GIT_DIR"; then
             echo "[entrypoint] Failed to clone STARTUP_GIT_REPO into $STARTUP_GIT_DIR." >&2
         fi
+        configure_repo_git_auth
     else
+        configure_repo_git_auth
         echo "[entrypoint] Pulling latest in $STARTUP_GIT_DIR..."
         if ! run_git -C "$STARTUP_GIT_DIR" pull --ff-only 2>&1; then
             echo "[entrypoint] Failed to pull latest in $STARTUP_GIT_DIR." >&2
